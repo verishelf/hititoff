@@ -4,24 +4,37 @@ This repo contains two apps:
 
 | Path | App |
 |------|-----|
-| `/` | Expo mobile app (React Native) — **not** a Vercel project |
-| `/website` | Next.js marketing site — **deploy this on Vercel** |
+| `/` | Expo mobile app (React Native) |
+| `/website` | Next.js marketing site ← **deploy this** |
 
-## Required: set Root Directory
+## Option A — Recommended (simplest)
 
-If Vercel shows **"No Next.js version detected"**, the project Root Directory is wrong.
+1. Vercel project → **Settings** → **General**
+2. **Root Directory** → **Edit** → type `website` → **Save**
+3. **Deployments** → **Redeploy**
 
-1. Open your Vercel project → **Settings** → **General**
-2. Find **Root Directory** → click **Edit**
-3. Enter: `website`
-4. Click **Save**
-5. Go to **Deployments** → **Redeploy** the latest deployment
+Vercel will use `website/package.json` and `website/vercel.json` automatically.
 
-Vercel must use `website/package.json` (which includes `next`), not the Expo `package.json` at the repo root.
+## Option B — Build from repo root
+
+If Root Directory is left as `.`, the repo includes a root [`vercel.json`](vercel.json) that:
+
+- Installs dependencies in `website/`
+- Runs `npm run build --prefix website`
+- Uses `next` in root `devDependencies` so Vercel detects the framework version
+
+After pulling latest, **Redeploy** without changing settings.
+
+## If you still see "No Next.js version detected"
+
+1. Confirm the latest commit is deployed (includes root `vercel.json`)
+2. Go to **Settings** → **General** → **Framework Preset** → set to **Next.js**
+3. Go to **Settings** → **Build & Deployment** and verify:
+   - **Install Command:** `npm install --prefix website` (or leave empty if Root Directory is `website`)
+   - **Build Command:** `npm run build --prefix website` (or leave empty if Root Directory is `website`)
+4. **Redeploy**
 
 ## Environment variables
-
-Set these in Vercel → **Settings** → **Environment Variables**:
 
 ```
 NEXT_PUBLIC_SITE_URL=https://hititoff.app
@@ -33,4 +46,4 @@ NEXT_PUBLIC_ANDROID_PLAY_STORE_URL=
 
 ## Domain
 
-Add `hititoff.app` under **Settings** → **Domains** and redirect `www` to the apex domain.
+Add `hititoff.app` under **Settings** → **Domains**.
