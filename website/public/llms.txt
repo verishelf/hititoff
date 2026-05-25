@@ -6,19 +6,20 @@ HitItOff helps adults meet nearby singles using personality quiz matching, compa
 
 ## Key pages
 
-- Home: https://hititoff.app/
-- Features: https://hititoff.app/features
-- How it works: https://hititoff.app/how-it-works
-- FAQ: https://hititoff.app/faq
-- Privacy: https://hititoff.app/privacy
-- Terms: https://hititoff.app/terms
-- Support: https://hititoff.app/support
+- Home: https://hititoff.vercel.app/
+- Features: https://hititoff.vercel.app/features
+- How it works: https://hititoff.vercel.app/how-it-works
+- FAQ: https://hititoff.vercel.app/faq
+- Privacy: https://hititoff.vercel.app/privacy
+- Terms: https://hititoff.vercel.app/terms
+- EULA: https://hititoff.vercel.app/eula
+- Support: https://hititoff.vercel.app/support
 
 ## Contact
 
 - Email: support@hititoff.app
-- Waitlist: https://hititoff.app/#waitlist
+- Waitlist: https://hititoff.vercel.app/#waitlist
 
 ## Expanded reference
 
-See https://hititoff.app/llms-full.txt
+See https://hititoff.vercel.app/llms-full.txt

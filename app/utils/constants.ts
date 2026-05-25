@@ -22,6 +22,11 @@ export const BOOST_DURATION_MINUTES = 30;
 
 export const APP_SLOGAN = 'Better Matches, Closer';
 
+export const WEBSITE_URL = 'https://hititoff.vercel.app';
+export const PRIVACY_POLICY_URL = `${WEBSITE_URL}/privacy`;
+export const TERMS_OF_SERVICE_URL = `${WEBSITE_URL}/terms`;
+export const EULA_URL = `${WEBSITE_URL}/eula`;
+
 /** RevenueCat entitlement identifier — must match dashboard exactly */
 export const HITITOFF_PRO_ENTITLEMENT = 'HitItOff Pro';
 

@@ -1,3 +1,5 @@
+import { SITE_URL, SUPPORT_EMAIL } from "./brand";
+
 export interface FAQItem {
   question: string;
   answer: string;
@@ -52,7 +54,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: "Is HitItOff available on iPhone and Android?",
     answer:
-      "HitItOff is launching soon on iOS and Android. Join the waitlist at hititoff.app to get notified when the app is available in your app store.",
+      `HitItOff is launching soon on iOS and Android. Join the waitlist at ${SITE_URL}/#waitlist to get notified when the app is available in your app store.`,
   },
   {
     question: "How is HitItOff different from other dating apps?",
@@ -62,6 +64,6 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: "How do I contact HitItOff support?",
     answer:
-      "Email support@hititoff.app or visit the Support page at hititoff.app/support. We respond to account, billing, and safety questions as quickly as possible.",
+      `Email ${SUPPORT_EMAIL} or visit the Support page at ${SITE_URL}/support. We respond to account, billing, and safety questions as quickly as possible.`,
   },
 ];

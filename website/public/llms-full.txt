@@ -52,15 +52,16 @@ Q: Does HitItOff use location?
 A: Yes, with permission, to show nearby profiles and calculate distance-based compatibility.
 
 Q: Is the app available now?
-A: HitItOff is launching soon on iOS and Android. Join the waitlist at https://hititoff.app/#waitlist
+A: HitItOff is launching soon on iOS and Android. Join the waitlist at https://hititoff.vercel.app/#waitlist
 
 ## Legal and support
 
-- Privacy Policy: https://hititoff.app/privacy
-- Terms of Service: https://hititoff.app/terms
+- Privacy Policy: https://hititoff.vercel.app/privacy
+- Terms of Service: https://hititoff.vercel.app/terms
+- EULA: https://hititoff.vercel.app/eula
 - Support email: support@hititoff.app
-- Support page: https://hititoff.app/support
+- Support page: https://hititoff.vercel.app/support
 
 ## Sitemap
 
-https://hititoff.app/sitemap.xml
+https://hititoff.vercel.app/sitemap.xml

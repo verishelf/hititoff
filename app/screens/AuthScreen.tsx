@@ -19,6 +19,7 @@ import {
   signInWithEmail,
   signUpWithEmail,
 } from '../services/authService';
+import { LegalLinksRow } from '../components/LegalLinksRow';
 import { COLORS } from '../utils/constants';
 import { headerText } from '../utils/typography';
 
@@ -234,6 +235,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
               )}
             </>
           )}
+          <LegalLinksRow />
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>

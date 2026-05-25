@@ -37,12 +37,12 @@ See [`../VERCEL.md`](../VERCEL.md) for full steps.
 
 1. Import the repository in [Vercel](https://vercel.com)
 2. Set **Root Directory** to `website` (required)
-3. Add environment variables from `.env.example`
-4. Connect custom domain `hititoff.app` and redirect `www` to apex
+3. Add environment variables from `.env.example` (`NEXT_PUBLIC_SITE_URL=https://hititoff.vercel.app`)
+4. Site URL for now: **https://hititoff.vercel.app** (add custom domain later if needed)
 
 ## Post-deploy SEO checklist
 
-- Submit `https://hititoff.app/sitemap.xml` in Google Search Console
+- Submit your sitemap in Google Search Console (e.g. `https://hititoff.vercel.app/sitemap.xml`)
 - Validate structured data at https://search.google.com/test/rich-results
 - Test Open Graph previews (home page uses generated OG image)
 - Add property in Bing Webmaster Tools

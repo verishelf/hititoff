@@ -1,8 +1,10 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 
 const FORM_ENDPOINT = process.env.NEXT_PUBLIC_WAITLIST_FORM_ENDPOINT ?? "";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hititoff.vercel.app";
 const SUPPORT_EMAIL =
   process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "support@hititoff.app";
 
@@ -32,7 +34,7 @@ export function WaitlistForm() {
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, source: "hititoff.app" }),
+          body: JSON.stringify({ email, source: SITE_URL }),
         });
 
         if (!response.ok) {
@@ -93,6 +95,21 @@ export function WaitlistForm() {
         >
           {status === "loading" ? "Submitting..." : "Notify me at launch"}
         </button>
+        <p className="text-xs leading-relaxed text-text-muted">
+          By joining, you agree to our{" "}
+          <Link href="/terms" className="text-primary hover:text-accent">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="text-primary hover:text-accent">
+            Privacy Policy
+          </Link>{" "}
+          and{" "}
+          <Link href="/eula" className="text-primary hover:text-accent">
+            EULA
+          </Link>
+          .
+        </p>
       </form>
       {message && (
         <p

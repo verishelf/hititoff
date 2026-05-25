@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { APP_NAME, APP_SLOGAN, FOOTER_LINKS, NAV_LINKS, SUPPORT_EMAIL } from "@/lib/brand";
+import { LegalLinks } from "./LegalLinks";
 import { StoreBadges } from "./StoreBadges";
 
 export function Footer() {
@@ -76,8 +77,9 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-10 border-t border-border/60 pt-6 text-sm text-text-muted">
-          <p>
+        <div className="mt-10 border-t border-border/60 pt-6 space-y-3">
+          <LegalLinks />
+          <p className="text-sm text-text-muted">
             © {new Date().getFullYear()} {APP_NAME}. All rights reserved. Must be 18+ to use.
           </p>
         </div>

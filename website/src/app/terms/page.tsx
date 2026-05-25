@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 
 import { APP_NAME, SUPPORT_EMAIL } from "@/lib/brand";
+import { LegalPageFooter } from "@/components/LegalPageFooter";
 import {
   breadcrumbJsonLd,
   buildMetadata,
@@ -118,6 +119,7 @@ export default function TermsPage() {
           </a>
           .
         </p>
+        <LegalPageFooter page="terms" />
         </div>
       </article>
     </>

@@ -1,5 +1,5 @@
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://hititoff.app";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://hititoff.vercel.app";
 
 export const APP_NAME = "HitItOff";
 export const APP_SLOGAN = "Better Matches, Closer";
@@ -101,5 +101,6 @@ export const NAV_LINKS = [
 export const FOOTER_LINKS = [
   { href: "/privacy", label: "Privacy Policy" },
   { href: "/terms", label: "Terms of Service" },
+  { href: "/eula", label: "EULA" },
   { href: "/support", label: "Support" },
 ] as const;

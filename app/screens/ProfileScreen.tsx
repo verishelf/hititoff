@@ -3,6 +3,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
 import { AppScrollView } from '../components/AppScrollView';
+import { LegalLinksRow } from '../components/LegalLinksRow';
 import { ProfilePhoto } from '../components/ProfilePhoto';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useState } from 'react';
@@ -458,6 +459,8 @@ export function ProfileScreen({ userId, onSignOut }: ProfileScreenProps) {
           ) : null}
 
           <Text style={styles.settingsTitle}>Settings</Text>
+
+          <LegalLinksRow />
 
           <TouchableOpacity style={styles.deleteAccountBtn} onPress={handleDeleteAccount}>
             <Ionicons name="trash-outline" size={18} color={COLORS.danger} />

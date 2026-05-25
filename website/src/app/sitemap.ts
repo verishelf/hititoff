@@ -9,6 +9,7 @@ const ROUTES = [
   { path: "/faq", priority: 0.8, changeFrequency: "monthly" as const },
   { path: "/privacy", priority: 0.5, changeFrequency: "yearly" as const },
   { path: "/terms", priority: 0.5, changeFrequency: "yearly" as const },
+  { path: "/eula", priority: 0.5, changeFrequency: "yearly" as const },
   { path: "/support", priority: 0.6, changeFrequency: "monthly" as const },
 ];
 

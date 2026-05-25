@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 
-import { APP_NAME, SUPPORT_EMAIL } from "@/lib/brand";
+import { APP_NAME, SITE_URL, SUPPORT_EMAIL } from "@/lib/brand";
+import { LegalPageFooter } from "@/components/LegalPageFooter";
 import {
   breadcrumbJsonLd,
   buildMetadata,
@@ -50,7 +51,7 @@ export default function PrivacyPage() {
         <p>
           This Privacy Policy describes how {APP_NAME} (&quot;we&quot;, &quot;us&quot;, or
           &quot;our&quot;) collects, uses, and protects information when you use the {APP_NAME}
-          mobile application and website at hititoff.app.
+          mobile application and website at {SITE_URL.replace("https://", "")}.
         </p>
 
         <h2>Information we collect</h2>
@@ -114,6 +115,7 @@ export default function PrivacyPage() {
           </a>
           .
         </p>
+        <LegalPageFooter page="privacy" />
         </div>
       </article>
     </>
