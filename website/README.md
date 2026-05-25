@@ -31,8 +31,12 @@ npm run website:build
 
 ## Vercel deployment
 
+**Root Directory must be `website`.** If you see `No Next.js version detected`, Vercel is building the Expo app at the repo root instead of this Next.js app. Fix: Settings → General → Root Directory → `website` → Save → Redeploy.
+
+See [`../VERCEL.md`](../VERCEL.md) for full steps.
+
 1. Import the repository in [Vercel](https://vercel.com)
-2. Set **Root Directory** to `website`
+2. Set **Root Directory** to `website` (required)
 3. Add environment variables from `.env.example`
 4. Connect custom domain `hititoff.app` and redirect `www` to apex
 
