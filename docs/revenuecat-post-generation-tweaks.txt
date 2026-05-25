@@ -1,0 +1,7 @@
+Make yearly the default selected package with a 'Best Value — Save 67%' badge. Add a pink border to the yearly card.
+
+Tighten the feature list spacing. Use green checkmark icons instead of bullet dots.
+
+Ensure all text meets WCAG contrast on the dark background. Muted text should be #b8a0ad, not gray.
+
+Add sticky footer with Terms, Privacy, and Restore links.

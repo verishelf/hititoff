@@ -1,0 +1,66 @@
+# HitItOff — Full site reference for AI indexing
+
+## Product summary
+
+HitItOff is a compatibility-first dating application for iOS and Android. The app combines a personality quiz, compatibility scoring, and location-based discovery to help users find better local matches. Tagline: "Better Matches, Closer."
+
+## Core features (free)
+
+- Personality quiz matching
+- Swipe to discover nearby singles
+- Up to 20 likes per day
+- 3 messages per match on free plan
+- Search radius up to 3 miles
+- Basic discovery filters
+- Mutual like required to match and chat
+
+## HitItOff Pro features
+
+- Unlimited likes per day
+- Unlimited messages
+- Search up to 50 mi radius
+- Advanced dating preferences
+- See who liked you
+- View all profile photos
+- Compatibility scores on every profile
+- Send and receive super likes
+- 20-second video intro
+- Profile boosts
+- Age, compatibility, and interest filters
+- Video and Instagram profile filters
+- No ads
+
+## How matching works
+
+1. Users complete a compatibility quiz covering personality, lifestyle, values, humor, and relationship preferences.
+2. HitItOff calculates compatibility using quiz similarity combined with distance within the selected search radius.
+3. Users swipe on profiles in their discovery feed.
+4. When both users like each other, they match and can chat.
+
+## FAQ
+
+Q: What is HitItOff?
+A: HitItOff is a compatibility-first dating app that helps you meet singles nearby using a personality quiz, compatibility scores, and local discovery.
+
+Q: Is HitItOff free?
+A: Yes. A free plan is available. HitItOff Pro adds unlimited likes and messages, larger radius, advanced filters, video intros, boosts, and an ad-free experience.
+
+Q: What age is required?
+A: Users must be 18 or older.
+
+Q: Does HitItOff use location?
+A: Yes, with permission, to show nearby profiles and calculate distance-based compatibility.
+
+Q: Is the app available now?
+A: HitItOff is launching soon on iOS and Android. Join the waitlist at https://hititoff.app/#waitlist
+
+## Legal and support
+
+- Privacy Policy: https://hititoff.app/privacy
+- Terms of Service: https://hititoff.app/terms
+- Support email: support@hititoff.app
+- Support page: https://hititoff.app/support
+
+## Sitemap
+
+https://hititoff.app/sitemap.xml

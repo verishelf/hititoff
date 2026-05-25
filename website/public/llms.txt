@@ -1,0 +1,24 @@
+# HitItOff
+
+> Better Matches, Closer — a compatibility-first dating app.
+
+HitItOff helps adults meet nearby singles using personality quiz matching, compatibility scores, local discovery, video intros, and smart filters. Launching soon on iOS and Android.
+
+## Key pages
+
+- Home: https://hititoff.app/
+- Features: https://hititoff.app/features
+- How it works: https://hititoff.app/how-it-works
+- FAQ: https://hititoff.app/faq
+- Privacy: https://hititoff.app/privacy
+- Terms: https://hititoff.app/terms
+- Support: https://hititoff.app/support
+
+## Contact
+
+- Email: support@hititoff.app
+- Waitlist: https://hititoff.app/#waitlist
+
+## Expanded reference
+
+See https://hititoff.app/llms-full.txt

@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+:root {
+  --background: #120810;
+  --foreground: #ffffff;
+  --surface: #1f1220;
+  --card: #2a1830;
+  --primary: #ff4d8d;
+  --primary-dark: #c9185a;
+  --accent: #ff8fab;
+  --text-muted: #b8a0ad;
+  --border: #3d2845;
+  --splash: #9d1b6b;
+  --success: #4ade80;
+  --danger: #f87171;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-accent: var(--accent);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-splash: var(--splash);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-outfit);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-outfit), system-ui, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.glass-card {
+  background: color-mix(in srgb, var(--card) 85%, transparent);
+  border: 1px solid color-mix(in srgb, white 12%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.hero-glow {
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 0%,
+    color-mix(in srgb, var(--splash) 45%, transparent),
+    transparent 70%
+  );
+}

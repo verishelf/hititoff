@@ -1,0 +1,77 @@
+Create a native mobile subscription paywall for "HitItOff Pro" — the premium tier of HitItOff, a location-based dating app for adults 18+. Tagline: "Better Matches, Closer."
+
+BRAND & VISUAL STYLE
+- Dark mode only — romantic, premium, modern dating app aesthetic
+- Background: deep plum-black (#120810) with subtle gradient to (#1f1220)
+- Card/surface color: #2a1830 with 1px border #3d2845, 16–20px rounded corners
+- Primary CTA and accents: hot pink #ff4d8d
+- Secondary accent/links: soft pink #ff8fab
+- Headline text: white #ffffff, bold (800 weight feel)
+- Body/subtext: muted mauve #b8a0ad
+- Success green #4ade80 for checkmarks on feature list
+- Clean, minimal layout — no clutter. System font style (SF Pro / Roboto feel)
+- Optional subtle heart or location/radius motif — tasteful, not cheesy
+- Glass/blur feel on package cards if supported
+
+HEADLINE & COPY TONE
+- Headline: "Upgrade to HitItOff Pro"
+- Subheadline: "Better Matches, Closer — without limits."
+- Tone: warm, direct, encouraging — like a helpful dating coach. Not snarky, not overly playful.
+- Primary CTA button: "Continue" or "Start HitItOff Pro" in pink (#ff4d8d), white bold text, 14px rounded pill shape
+- Secondary link: "Restore Purchases" in accent pink (#ff8fab), underlined
+
+FEATURE LIST (use checkmarks in success green)
+Show all 13 features in a scannable vertical list:
+• Unlimited likes per day
+• Unlimited messages
+• Search up to 50 mi radius
+• Advanced dating preferences
+• See who liked you
+• View all profile photos
+• Compatibility scores on every profile
+• Super likes
+• 20-second video intro
+• Profile boosts
+• Age, compatibility & interest filters
+• Video & Instagram profile filters
+• No ads
+
+SUBSCRIPTION PLANS — exactly 3 tiers
+Display as selectable package cards in a vertical stack or horizontal row:
+
+1. WEEKLY — $5.99/week
+   - Package identifier: weekly
+   - Small label: "Flexible"
+   - Subtext: "Try HitItOff Pro"
+
+2. MONTHLY — $29.99/month
+   - Package identifier: monthly
+   - Subtext: "Most popular for daters"
+
+3. YEARLY — $119.99/year  ← DEFAULT SELECTED
+   - Package identifier: yearly
+   - Badge: "Best Value" or "Save 67%"
+   - Subtext: "Just $9.99/month — save vs monthly"
+   - Visually emphasize: pink border or "Best Value" pill badge on card
+
+LAYOUT STRUCTURE (top to bottom)
+1. Close/dismiss affordance (top-right X)
+2. App name "HitItOff" in pink or small logo area
+3. Headline + subheadline
+4. Feature list with green checkmarks (compact, 13 items)
+5. Three plan selector cards (yearly pre-selected and highlighted)
+6. Large pink CTA button
+7. Fine print: "Subscription auto-renews. Cancel anytime in Settings."
+8. Footer links: Restore Purchases | Terms of Service | Privacy Policy
+
+COMPLIANCE
+- Include auto-renewal disclaimer
+- Terms and Privacy links in footer
+- Restore Purchases visible
+
+DO NOT
+- Use light/white background
+- Use blue or generic SaaS styling
+- Overuse emojis (max 0–1 in entire paywall)
+- Mention competitor apps
+- Use aggressive or guilt-trip copy
