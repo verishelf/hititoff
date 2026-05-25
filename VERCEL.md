@@ -1,49 +1,58 @@
 # Deploying the marketing site on Vercel
 
-This repo contains two apps:
+This repo has an Expo app at `/` and a Next.js site at `/website`.
 
-| Path | App |
-|------|-----|
-| `/` | Expo mobile app (React Native) |
-| `/website` | Next.js marketing site ← **deploy this** |
+## Fix: "No Next.js version detected"
 
-## Option A — Recommended (simplest)
+Vercel must build the **website** folder, not the Expo app at the repo root.
 
-1. Vercel project → **Settings** → **General**
-2. **Root Directory** → **Edit** → type `website` → **Save**
-3. **Deployments** → **Redeploy**
+### Step 1 — Set Root Directory (required)
 
-Vercel will use `website/package.json` and `website/vercel.json` automatically.
+1. Open [vercel.com](https://vercel.com) → your **hititoff** project
+2. **Settings** → **General**
+3. Scroll to **Root Directory** → click **Edit**
+4. Type exactly: `website`
+5. Click **Save**
 
-## Option B — Build from repo root
+### Step 2 — Clear build overrides (if set)
 
-If Root Directory is left as `.`, the repo includes a root [`vercel.json`](vercel.json) that:
+1. **Settings** → **Build and Deployment**
+2. Under **Framework Settings**, turn **OFF** any overrides for:
+   - Framework Preset (should be **Next.js**)
+   - Install Command (leave empty — uses `website/package.json`)
+   - Build Command (leave empty — uses `npm run build` in `website/`)
+   - Output Directory (leave empty)
+3. Click **Save**
 
-- Installs dependencies in `website/`
-- Runs `npm run build --prefix website`
-- Uses `next` in root `devDependencies` so Vercel detects the framework version
+### Step 3 — Redeploy
 
-After pulling latest, **Redeploy** without changing settings.
+1. **Deployments** tab
+2. Click **⋯** on the latest deployment → **Redeploy**
+3. Check **Use existing Build Cache** is OFF for the first retry
 
-## If you still see "No Next.js version detected"
+### What a successful build looks like
 
-1. Confirm the latest commit is deployed (includes root `vercel.json`)
-2. Go to **Settings** → **General** → **Framework Preset** → set to **Next.js**
-3. Go to **Settings** → **Build & Deployment** and verify:
-   - **Install Command:** `npm install --prefix website` (or leave empty if Root Directory is `website`)
-   - **Build Command:** `npm run build --prefix website` (or leave empty if Root Directory is `website`)
-4. **Redeploy**
+```
+Detected Next.js version: 16.2.6
+Running "npm run build"
+Route (app) ... /, /faq, /features, ...
+```
+
+Install should show ~360 packages (website only), **not** ~691 (Expo root).
 
 ## Environment variables
 
-```
-NEXT_PUBLIC_SITE_URL=https://hititoff.app
-NEXT_PUBLIC_SUPPORT_EMAIL=support@hititoff.app
-NEXT_PUBLIC_WAITLIST_FORM_ENDPOINT=
-NEXT_PUBLIC_IOS_APP_STORE_URL=
-NEXT_PUBLIC_ANDROID_PLAY_STORE_URL=
-```
+Set in **Settings** → **Environment Variables**:
+
+| Variable | Value |
+|----------|-------|
+| `NEXT_PUBLIC_SITE_URL` | `https://hititoff.app` |
+| `NEXT_PUBLIC_SUPPORT_EMAIL` | `support@hititoff.app` |
 
 ## Domain
 
-Add `hititoff.app` under **Settings** → **Domains**.
+**Settings** → **Domains** → add `hititoff.app`
+
+## Fallback (repo root build)
+
+If you cannot set Root Directory, the root [`vercel.json`](vercel.json) and `next` in root `devDependencies` allow building from the repo root. This is less reliable — **prefer Root Directory = `website`**.
