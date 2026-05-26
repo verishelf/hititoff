@@ -8,6 +8,7 @@ import {
   updateProfile,
   uploadProfilePhoto,
 } from '../services/matchService';
+import { getOwnPhone, upsertOwnPhone } from '../services/phoneService';
 import type { RadiusMi, Gender, LookingFor } from '../utils/constants';
 import type { UserProfile } from '../types';
 import type { DiscoveryPreferencesValue } from '../types';
@@ -30,6 +31,8 @@ interface UserState {
       looking_for: LookingFor;
       photoUris: string[];
       photoMimeTypes?: string[];
+      profilePrompts?: { prompt: string; answer: string }[];
+      phoneNumber?: string;
     },
   ) => Promise<void>;
   completeQuiz: (userId: string, answers: QuizAnswers) => Promise<void>;
@@ -49,6 +52,11 @@ interface UserState {
         | 'looking_for'
         | 'pref_age_min'
         | 'pref_age_max'
+        | 'profile_prompts'
+        | 'current_mood'
+        | 'voice_bio_url'
+        | 'vibe_clip_url'
+        | 'voice_vibe_summary'
       >
     >,
   ) => Promise<void>;
@@ -71,8 +79,14 @@ export const useUserStore = create<UserState>((set, get) => ({
   loadProfile: async (userId) => {
     set({ isLoading: true, error: null });
     try {
-      const profile = await getProfileWithValidPhotos(userId);
-      set({ profile, isLoading: false });
+      const [profile, phoneNumber] = await Promise.all([
+        getProfileWithValidPhotos(userId),
+        getOwnPhone(userId),
+      ]);
+      set({
+        profile: profile ? { ...profile, phone_number: phoneNumber } : null,
+        isLoading: false,
+      });
     } catch (e) {
       set({
         error: e instanceof Error ? e.message : 'Failed to load profile',
@@ -103,11 +117,19 @@ export const useUserStore = create<UserState>((set, get) => ({
         gender: data.gender,
         looking_for: data.looking_for,
         photos: photoUrls,
+        profile_prompts: data.profilePrompts ?? [],
       });
 
       await updateUserLocation(userId);
+      if (data.phoneNumber?.trim()) {
+        await upsertOwnPhone(userId, data.phoneNumber.trim());
+      }
       const refreshed = await getProfile(userId);
-      set({ profile: refreshed ?? profile, isLoading: false });
+      const phoneNumber = await getOwnPhone(userId);
+      set({
+        profile: refreshed ? { ...refreshed, phone_number: phoneNumber } : profile,
+        isLoading: false,
+      });
     } catch (e) {
       set({
         error: e instanceof Error ? e.message : 'Failed to save profile',
@@ -124,6 +146,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       const profile = await updateProfile(userId, {
         quiz_vector,
         quiz_completed: true,
+        quiz_answers: answers,
       });
       set({ profile, isLoading: false });
     } catch (e) {
@@ -162,6 +185,8 @@ export const useUserStore = create<UserState>((set, get) => ({
         pref_require_bio: preferences.pref_require_bio,
         pref_require_video: preferences.pref_require_video,
         pref_require_instagram: preferences.pref_require_instagram,
+        pref_match_mood: preferences.pref_match_mood,
+        pref_mood_filters: preferences.pref_mood_filters,
       });
       set({ profile, isLoading: false });
     } catch (e) {

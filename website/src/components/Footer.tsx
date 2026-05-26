@@ -27,8 +27,9 @@ export function Footer() {
               </div>
             </div>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-text-muted">
-              Compatibility-first dating with personality quiz matching, local discovery,
-              video intros, and smart filters. Launching soon on iOS and Android.
+              AI-powered compatibility dating with mood-based discovery, conversation
+              starters, chemistry tracking, voice bios, date ideas, and safety tools.
+              Launching soon on iOS and Android.
             </p>
             <div className="mt-6">
               <StoreBadges compact />

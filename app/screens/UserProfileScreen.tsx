@@ -21,12 +21,21 @@ import { ProfileMessageSection } from '../components/ProfileMessageSection';
 import { InstagramSection } from '../components/InstagramSection';
 import { getMatchIdForUsers, createMatchFromLikedYou } from '../services/matchService';
 import { useMatchStore } from '../store/matchStore';
-import { useSubscriptionStore } from '../store/subscriptionStore';
+import { useHitItOffPro } from '../hooks/useHitItOffPro';
 import { useUserStore } from '../store/userStore';
 import { COLORS } from '../utils/constants';
 import { headerText, navHeaderText } from '../utils/typography';
 import { formatDistanceMi } from '../utils/distance';
-import type { RootStackParamList } from '../types';
+import { getCompatibilityBreakdown } from '../utils/compatibility';
+import type { RootStackParamList, CompatibilityBreakdown } from '../types';
+import { CompatibilityBreakdown as CompatibilityBreakdownView } from '../components/CompatibilityBreakdown';
+import { RespectfulDaterBadge } from '../components/RespectfulDaterBadge';
+import { MoodBadge } from '../components/MoodBadge';
+import { VoiceBioSection } from '../components/VoiceBioSection';
+import { ReportBlockSheet } from '../components/ReportBlockSheet';
+import { SparkMeter, INITIAL_SPARK_TEMPERATURE } from '../components/SparkMeter';
+import { DateInviteSection } from '../components/DateInviteSection';
+import { useMatchChemistry } from '../hooks/useMatchChemistry';
 
 type UserProfileRoute = RouteProp<RootStackParamList, 'UserProfile'>;
 
@@ -38,7 +47,7 @@ export function UserProfileScreen({ userId }: UserProfileScreenProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<UserProfileRoute>();
   const { profile } = useUserStore();
-  const { isPremium: subPremium } = useSubscriptionStore();
+  const { hasPro: premium } = useHitItOffPro();
   const dismissedMessageMatchIds = useMatchStore((s) => s.dismissedMessageMatchIds);
   const restoreToMessagesInbox = useMatchStore((s) => s.restoreToMessagesInbox);
 
@@ -55,14 +64,19 @@ export function UserProfileScreen({ userId }: UserProfileScreenProps) {
     distanceMi,
     compatibilityScore,
     fromLikedYou,
+    currentMood,
+    voiceBioUrl,
+    voiceVibeSummary,
+    respectfulDaterBadge,
   } = route.params;
 
-  const [matchId, setMatchId] = useState<string | null>(null);
+  const [matchId, setMatchId] = useState<string | null>(route.params.matchId ?? null);
   const [startingMessage, setStartingMessage] = useState(false);
   const [showMessageComposer, setShowMessageComposer] = useState(true);
+  const [breakdown, setBreakdown] = useState<CompatibilityBreakdown | null>(null);
+  const [reportVisible, setReportVisible] = useState(false);
+  const { sparkMeter } = useMatchChemistry(matchId);
 
-  const premium = Boolean(subPremium || profile?.is_premium);
-  const isConversationRemoved = Boolean(matchId && dismissedMessageMatchIds.includes(matchId));
   const photosUnlocked = premium;
   const photoHeight = Dimensions.get('window').width - 48;
 
@@ -76,6 +90,16 @@ export function UserProfileScreen({ userId }: UserProfileScreenProps) {
       refreshMatchId();
     }, [refreshMatchId]),
   );
+
+  useEffect(() => {
+    if (premium && compatibilityScore != null) {
+      getCompatibilityBreakdown(userId, otherUserId, compatibilityScore, compatibilityScore)
+        .then(setBreakdown)
+        .catch(() => {});
+    }
+  }, [userId, otherUserId, premium, compatibilityScore]);
+
+  const isConversationRemoved = Boolean(matchId && dismissedMessageMatchIds.includes(matchId));
 
   useEffect(() => {
     if (!matchId) {
@@ -124,7 +148,9 @@ export function UserProfileScreen({ userId }: UserProfileScreenProps) {
             <Ionicons name="chevron-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Profile</Text>
-          <View style={styles.backBtn} />
+          <TouchableOpacity onPress={() => setReportVisible(true)} style={styles.backBtn}>
+            <Ionicons name="ellipsis-horizontal" size={22} color={COLORS.textMuted} />
+          </TouchableOpacity>
         </View>
 
         <KeyboardAvoidingView
@@ -154,7 +180,23 @@ export function UserProfileScreen({ userId }: UserProfileScreenProps) {
                 <Text style={styles.matchBadgeText}>{compatibilityScore}% compatible</Text>
               </View>
             )}
+            <View style={styles.badgeRow}>
+              <MoodBadge mood={currentMood} size="medium" />
+              {respectfulDaterBadge && <RespectfulDaterBadge size="medium" />}
+            </View>
             {bio ? <Text style={styles.bio}>{bio}</Text> : null}
+
+            <VoiceBioSection
+              voiceBioUrl={voiceBioUrl}
+              vibeSummary={voiceVibeSummary}
+            />
+
+            {breakdown && (
+              <CompatibilityBreakdownView
+                breakdown={breakdown}
+                blurred={!premium}
+              />
+            )}
 
             {interests.length > 0 && (
               <View style={styles.interests}>
@@ -198,6 +240,26 @@ export function UserProfileScreen({ userId }: UserProfileScreenProps) {
                 )}
               </TouchableOpacity>
             )}
+
+            {matchId ? (
+              <View style={styles.sparkRow}>
+                <SparkMeter
+                  value={sparkMeter > 0 ? sparkMeter : INITIAL_SPARK_TEMPERATURE}
+                  size={64}
+                  label="Conversation temperature"
+                  isInitialBaseline={sparkMeter <= 0}
+                />
+              </View>
+            ) : null}
+
+            {matchId ? (
+              <DateInviteSection
+                matchId={matchId}
+                userId={userId}
+                otherUserName={name}
+                isPremium={premium}
+              />
+            ) : null}
           </AppScrollView>
 
           {matchId && isConversationRemoved && !showMessageComposer && (
@@ -216,6 +278,15 @@ export function UserProfileScreen({ userId }: UserProfileScreenProps) {
             />
           ) : null}
         </KeyboardAvoidingView>
+
+        <ReportBlockSheet
+          visible={reportVisible}
+          reporterId={userId}
+          reportedId={otherUserId}
+          reportedName={name}
+          onClose={() => setReportVisible(false)}
+          onBlocked={() => navigation.goBack()}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -270,6 +341,17 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: 13,
     fontWeight: '700',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+    flexWrap: 'wrap',
+  },
+  sparkRow: {
+    marginTop: 24,
+    marginBottom: 8,
+    alignItems: 'center',
   },
   bio: {
     color: COLORS.textMuted,

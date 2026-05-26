@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Slider from '@react-native-community/slider';
+import { HapticSlider } from './HapticSlider';
 import { Ionicons } from '@expo/vector-icons';
 import {
   COLORS,
@@ -86,7 +86,7 @@ function RadiusSliderPanel({
         )}
       </View>
 
-      <Slider
+      <HapticSlider
         style={styles.slider}
         minimumValue={0}
         maximumValue={RADIUS_OPTIONS_MI.length - 1}
@@ -164,7 +164,7 @@ function RadiusSliderInline({
         )}
       </View>
 
-      <Slider
+      <HapticSlider
         style={styles.inlineSlider}
         minimumValue={0}
         maximumValue={RADIUS_OPTIONS_MI.length - 1}

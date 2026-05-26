@@ -1,4 +1,5 @@
 import { CTASection } from "@/components/CTASection";
+import { CoachComparisonSection } from "@/components/CoachComparisonSection";
 import { FAQAccordion } from "@/components/FAQAccordion";
 import { FeatureGrid } from "@/components/FeatureGrid";
 import { Hero } from "@/components/Hero";
@@ -15,12 +16,14 @@ export default function HomePage() {
 
       <FeatureGrid />
 
+      <CoachComparisonSection />
+
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div className="max-w-2xl">
           <h2 className="text-3xl font-bold sm:text-4xl">How HitItOff works</h2>
           <p className="mt-4 text-lg text-text-muted">
-            From quiz to match in four simple steps. Built for people who want
-            smarter local dating with real compatibility context.
+            From quiz to chemistry in four simple steps. Built for people who want
+            smarter local dating with AI-powered compatibility context.
           </p>
         </div>
         <div className="mt-12">
@@ -55,7 +58,16 @@ export default function HomePage() {
           </p>
         </div>
         <div className="mt-10">
-          <FAQAccordion items={FAQ_ITEMS.slice(0, 6)} />
+          <FAQAccordion items={FAQ_ITEMS.filter((item) =>
+            [
+              'What is HitItOff?',
+              'What AI features does HitItOff include?',
+              'How is HitItOff different from AI dating coaches like Hitch?',
+              'Is HitItOff free to use?',
+              'How does the chemistry system work?',
+              'Is HitItOff available on iPhone and Android?',
+            ].includes(item.question),
+          )} />
         </div>
       </section>
 

@@ -44,7 +44,7 @@ export default function TermsPage() {
       />
       <article className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
         <h1 className="text-4xl font-bold sm:text-5xl">Terms of Service</h1>
-        <p className="mt-4 text-text-muted">Last updated: May 24, 2026</p>
+        <p className="mt-4 text-text-muted">Last updated: May 25, 2026</p>
 
         <div className="mt-8 space-y-8 text-sm leading-relaxed text-text-muted [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-foreground [&_li]:mt-2 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5">
 
@@ -75,6 +75,15 @@ export default function TermsPage() {
           You are responsible for maintaining the security of your account. We may suspend
           or terminate accounts that violate these Terms or create safety risks for the
           community.
+        </p>
+
+        <h2>AI features</h2>
+        <p>
+          {APP_NAME} includes AI-powered features such as compatibility insights, conversation
+          starters, voice summaries, date suggestions, and automated moderation. These tools
+          are provided for convenience and safety assistance only. AI-generated content may
+          be inaccurate or incomplete, and you remain responsible for what you send and how
+          you interact with other users.
         </p>
 
         <h2>Subscriptions</h2>

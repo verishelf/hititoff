@@ -137,9 +137,47 @@ export async function signInWithApple(): Promise<void> {
   await signInWithOAuth('apple');
 }
 
+export function isInvalidRefreshTokenError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /refresh token/i.test(message) || /invalid refresh/i.test(message);
+}
+
+/** Clear cached auth without requiring a valid refresh token on the server. */
+export async function clearStaleSession(): Promise<void> {
+  await supabase.auth.signOut({ scope: 'local' });
+}
+
+/**
+ * Returns a session only if it is still valid on the Supabase Auth server.
+ * Clears stale local tokens when refresh fails (common after DB resets or key changes).
+ */
+export async function getValidSession(): Promise<Session | null> {
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+  if (sessionError && isInvalidRefreshTokenError(sessionError)) {
+    await clearStaleSession();
+    return null;
+  }
+
+  if (!session) return null;
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    if (isInvalidRefreshTokenError(userError)) {
+      await clearStaleSession();
+    }
+    return null;
+  }
+
+  return session;
+}
+
 export async function signOut(): Promise<void> {
   const { error } = await supabase.auth.signOut();
-  if (error) throw new Error(error.message);
+  if (error && !isInvalidRefreshTokenError(error)) {
+    throw new Error(error.message);
+  }
+  await clearStaleSession();
 }
 
 export async function deleteAccount(): Promise<void> {
@@ -159,8 +197,7 @@ export function onAuthStateChange(
 }
 
 export async function getSession(): Promise<Session | null> {
-  const { data } = await supabase.auth.getSession();
-  return data.session;
+  return getValidSession();
 }
 
 export { redirectUrl };

@@ -3,7 +3,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import { AppFlatList } from '../components/AppFlatList';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -20,19 +20,30 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import {
   canSendMessage,
   deleteMessage,
-  generateIcebreakers,
   getMessages,
+  isConversationStale,
   markAsRead,
   sendMessage,
+  sendQuickResponse,
   subscribeToMessages,
 } from '../services/chatService';
 import { useMatchStore } from '../store/matchStore';
-import { useSubscriptionStore } from '../store/subscriptionStore';
+import { useHitItOffPro } from '../hooks/useHitItOffPro';
 import { useUserStore } from '../store/userStore';
 import { COLORS, FREE_MESSAGES_PER_MATCH } from '../utils/constants';
 import type { Message, RootStackParamList } from '../types';
 import { ChatMessageBubble } from '../components/ChatMessageBubble';
 import { MessageLimitModal } from '../components/MessageLimitModal';
+import { ConversationStarterPanel } from '../components/ConversationStarterPanel';
+import { ConversationCoachPanel } from '../components/ConversationCoachPanel';
+import { QuickResponseBar } from '../components/QuickResponseBar';
+import { SparkMeter, INITIAL_SPARK_TEMPERATURE } from '../components/SparkMeter';
+import { ChemistryTimeline } from '../components/ChemistryTimeline';
+import { DateIdeasSheet } from '../components/DateIdeasSheet';
+import { ReportBlockSheet } from '../components/ReportBlockSheet';
+import { MessageFlagSheet } from '../components/MessageFlagSheet';
+import { useMatchChemistry } from '../hooks/useMatchChemistry';
+import type { QuickResponseKey } from '../utils/quickResponses';
 
 interface ChatScreenProps {
   userId: string;
@@ -43,22 +54,25 @@ interface ChatScreenProps {
 export function ChatScreen({
   userId,
   route,
-  otherUserInterests = [],
 }: ChatScreenProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { matchId, otherUserName } = route.params;
+  const { matchId, otherUserName, otherUserId } = route.params;
   const { profile } = useUserStore();
-  const { isPremium: subPremium } = useSubscriptionStore();
-  const premium = Boolean(subPremium || profile?.is_premium);
+  const { hasPro: premium } = useHitItOffPro();
   const restoreToMessagesInbox = useMatchStore((s) => s.restoreToMessagesInbox);
   const dismissFromMessagesInbox = useMatchStore((s) => s.dismissFromMessagesInbox);
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState('');
-  const [icebreakers, setIcebreakers] = useState<string[]>([]);
   const [sending, setSending] = useState(false);
   const [remaining, setRemaining] = useState(FREE_MESSAGES_PER_MATCH);
   const [limitModalVisible, setLimitModalVisible] = useState(false);
+  const [showChemistry, setShowChemistry] = useState(false);
+  const [dateSheetVisible, setDateSheetVisible] = useState(false);
+  const [reportVisible, setReportVisible] = useState(false);
+  const [flagSheetVisible, setFlagSheetVisible] = useState(false);
+  const [flagMessageText, setFlagMessageText] = useState('');
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const { chemistry, events, sparkMeter } = useMatchChemistry(matchId);
 
   useEffect(() => {
     channelRef.current = subscribeToMessages(matchId, setMessages);
@@ -92,29 +106,44 @@ export function ChatScreen({
       await sendMessage(matchId, userId, content);
       restoreToMessagesInbox(matchId);
       setText('');
-      setIcebreakers([]);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Send failed';
       if (message.includes('limit')) {
         showLimitModal();
+      } else {
+        Alert.alert('Error', message);
       }
     } finally {
       setSending(false);
     }
   };
 
-  const loadIcebreakers = useCallback(async () => {
-    const myInterests = profile?.interests ?? [];
-    const shared = myInterests.filter((i) => otherUserInterests.includes(i));
-    const suggestions = await generateIcebreakers(shared, otherUserName);
-    setIcebreakers(suggestions);
-  }, [profile, otherUserName, otherUserInterests]);
+  const handleQuickResponse = async (key: QuickResponseKey, message: string) => {
+    const { allowed } = await canSendMessage(matchId, userId, premium);
+    if (!allowed) {
+      showLimitModal();
+      return;
+    }
+    setSending(true);
+    try {
+      await sendQuickResponse(matchId, userId, key, message);
+      restoreToMessagesInbox(matchId);
+    } catch (e) {
+      Alert.alert('Error', e instanceof Error ? e.message : 'Send failed');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleVoiceSend = async () => {
+    Alert.alert('Voice messages', 'Record a voice bio from your profile, or use text messages here.');
+  };
 
   const handleDelete = async (messageId: string) => {
     try {
       await deleteMessage(messageId, userId);
-      const remaining = await getMessages(matchId);
-      const ownRemaining = remaining.filter((message) => message.sender_id === userId);
+      const remainingMsgs = await getMessages(matchId);
+      const ownRemaining = remainingMsgs.filter((message) => message.sender_id === userId);
       if (ownRemaining.length === 0) {
         dismissFromMessagesInbox(matchId);
       }
@@ -124,14 +153,54 @@ export function ChatScreen({
   };
 
   const renderMessage = ({ item }: { item: Message }) => (
-    <ChatMessageBubble message={item} userId={userId} onDelete={handleDelete} />
+    <ChatMessageBubble
+      message={item}
+      userId={userId}
+      onDelete={handleDelete}
+      onCheckMessage={(text) => {
+        setFlagMessageText(text);
+        setFlagSheetVisible(true);
+      }}
+    />
   );
 
   const canSend = premium || remaining > 0;
+  const stale = isConversationStale(messages);
 
   return (
     <LinearGradient colors={[COLORS.background, COLORS.surface]} style={styles.gradient}>
       <SafeAreaView style={styles.container} edges={['bottom']}>
+        <View style={styles.chatHeader}>
+          <SparkMeter
+            value={sparkMeter > 0 ? sparkMeter : INITIAL_SPARK_TEMPERATURE}
+            size={48}
+            messageCount={messages.length}
+            isInitialBaseline={
+              sparkMeter <= 0 ||
+              (sparkMeter <= INITIAL_SPARK_TEMPERATURE && messages.length === 0)
+            }
+            onViewDetails={() => setShowChemistry(true)}
+          />
+          <View style={styles.headerActions}>
+            <TouchableOpacity onPress={() => setDateSheetVisible(true)} style={styles.headerBtn}>
+              <Ionicons name="calendar-outline" size={22} color={COLORS.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setReportVisible(true)} style={styles.headerBtn}>
+              <Ionicons name="ellipsis-horizontal" size={22} color={COLORS.textMuted} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {showChemistry && (
+          <View style={styles.chemistryPanel}>
+            <ChemistryTimeline
+              events={events}
+              sparkMeter={sparkMeter}
+              detailed={premium}
+            />
+          </View>
+        )}
+
         <KeyboardAvoidingView
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -145,28 +214,24 @@ export function ChatScreen({
             </Text>
           )}
 
-          {messages.length === 0 && canSend && (
-            <TouchableOpacity style={styles.icebreakerBtn} onPress={loadIcebreakers}>
-              <Ionicons name="sparkles" size={18} color={COLORS.primary} />
-              <Text style={styles.icebreakerBtnText}>Get AI icebreakers</Text>
-            </TouchableOpacity>
-          )}
+          <ConversationStarterPanel
+            matchId={matchId}
+            isPremium={premium}
+            onSend={handleSend}
+            visible={messages.length === 0 && canSend}
+          />
 
-          {icebreakers.length > 0 && canSend && (
-            <View style={styles.icebreakers}>
-              {icebreakers.map((suggestion, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={styles.icebreakerChip}
-                  onPress={() => handleSend(suggestion)}
-                >
-                  <Text style={styles.icebreakerText} numberOfLines={2}>
-                    {suggestion}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          <ConversationCoachPanel
+            matchId={matchId}
+            isPremium={premium}
+            onSend={handleSend}
+            visible={messages.length > 0 && canSend}
+          />
+
+          <QuickResponseBar
+            visible={stale && canSend}
+            onSelect={handleQuickResponse}
+          />
 
           <AppFlatList
             data={messages}
@@ -177,6 +242,12 @@ export function ChatScreen({
           />
 
           <View style={styles.inputRow}>
+            <TouchableOpacity
+              style={styles.micBtn}
+              onPress={handleVoiceSend}
+            >
+              <Ionicons name="mic-outline" size={22} color={COLORS.primary} />
+            </TouchableOpacity>
             <TextInput
               style={[styles.input, !canSend && styles.inputDisabled]}
               placeholder={
@@ -216,6 +287,31 @@ export function ChatScreen({
           }}
           onDismiss={() => setLimitModalVisible(false)}
         />
+
+        <DateIdeasSheet
+          visible={dateSheetVisible}
+          matchId={matchId}
+          isPremium={premium}
+          onClose={() => setDateSheetVisible(false)}
+          onUpgrade={() => {
+            setDateSheetVisible(false);
+            navigation.navigate('Paywall');
+          }}
+        />
+
+        <MessageFlagSheet
+          visible={flagSheetVisible}
+          messageText={flagMessageText}
+          onClose={() => setFlagSheetVisible(false)}
+        />
+
+        <ReportBlockSheet
+          visible={reportVisible}
+          reporterId={userId}
+          reportedId={otherUserId}
+          reportedName={otherUserName}
+          onClose={() => setReportVisible(false)}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -225,6 +321,18 @@ const styles = StyleSheet.create({
   gradient: { flex: 1 },
   container: { flex: 1 },
   flex: { flex: 1 },
+  chatHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  headerActions: { flexDirection: 'row', gap: 8 },
+  headerBtn: { padding: 8 },
+  chemistryPanel: { paddingHorizontal: 16, paddingVertical: 8 },
   limitHint: {
     color: COLORS.textMuted,
     fontSize: 12,
@@ -232,24 +340,6 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingHorizontal: 16,
   },
-  icebreakerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    alignSelf: 'center',
-    padding: 12,
-    marginTop: 12,
-  },
-  icebreakerBtnText: { color: COLORS.primary, fontSize: 14, fontWeight: '600' },
-  icebreakers: { padding: 12, gap: 8 },
-  icebreakerChip: {
-    backgroundColor: COLORS.card,
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  icebreakerText: { color: COLORS.text, fontSize: 14 },
   messagesList: { padding: 16, flexGrow: 1 },
   inputRow: {
     flexDirection: 'row',
@@ -258,6 +348,16 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     alignItems: 'flex-end',
+  },
+  micBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   input: {
     flex: 1,

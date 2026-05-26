@@ -6,8 +6,8 @@ interface CTASectionProps {
 }
 
 export function CTASection({
-  title = "Ready for better matches?",
-  description = "Join the HitItOff waitlist and be first to download when we launch on iOS and Android.",
+  title = "Ready for smarter matches?",
+  description = "Join the HitItOff waitlist for AI-powered compatibility, mood matching, and chemistry tracking — launching soon on iOS and Android.",
 }: CTASectionProps) {
   return (
     <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">

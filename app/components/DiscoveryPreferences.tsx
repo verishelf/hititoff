@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Slider from '@react-native-community/slider';
+import { HapticSlider } from './HapticSlider';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useState, type ReactNode } from 'react';
 import type { DiscoveryPreferencesValue, UserProfile } from '../types';
@@ -30,6 +30,7 @@ import {
   type LookingFor,
   type RadiusMi,
 } from '../utils/constants';
+import { MOOD_OPTIONS } from '../utils/moodData';
 import { headerText, navHeaderText } from '../utils/typography';
 
 interface DiscoveryPreferencesProps {
@@ -187,6 +188,8 @@ export function profileToDiscoveryPreferences(profile: UserProfile): DiscoveryPr
     pref_require_bio: profile.pref_require_bio,
     pref_require_video: profile.pref_require_video,
     pref_require_instagram: profile.pref_require_instagram,
+    pref_match_mood: profile.pref_match_mood ?? false,
+    pref_mood_filters: profile.pref_mood_filters ?? [],
   };
 }
 
@@ -309,7 +312,7 @@ function PreferencesForm({
             </Text>
           </View>
           <Text style={styles.sliderCaption}>Minimum age</Text>
-          <Slider
+          <HapticSlider
             style={styles.slider}
             minimumValue={MIN_USER_AGE}
             maximumValue={MAX_USER_AGE - 1}
@@ -328,7 +331,7 @@ function PreferencesForm({
             disabled={!isPremium}
           />
           <Text style={styles.sliderCaption}>Maximum age</Text>
-          <Slider
+          <HapticSlider
             style={styles.slider}
             minimumValue={MIN_USER_AGE + 1}
             maximumValue={MAX_USER_AGE}
@@ -361,7 +364,7 @@ function PreferencesForm({
           <View style={styles.valuePill}>
             <Text style={styles.valuePillText}>{minCompatibility}% match or higher</Text>
           </View>
-          <Slider
+          <HapticSlider
             style={styles.slider}
             minimumValue={50}
             maximumValue={100}
@@ -430,6 +433,46 @@ function PreferencesForm({
           }}
           formatLabel={(count) => (count === 1 ? '1 photo' : `${count}+ photos`)}
         />
+      </View>
+
+      <View style={styles.divider} />
+
+      <View style={styles.section}>
+        <SectionLabel
+          title="Mood matching"
+          locked={!isPremium}
+          subtitle="Filter by current vibe"
+        />
+        <PremiumSection locked={!isPremium} onLockedPress={onPremiumRequired}>
+          <ToggleRow
+            label="Match my mood"
+            description="Show people with compatible vibes"
+            value={draft.pref_match_mood ?? false}
+            onValueChange={(pref_match_mood) => onPatch({ pref_match_mood })}
+          />
+          <View style={styles.chips}>
+            {MOOD_OPTIONS.map((mood) => {
+              const active = (draft.pref_mood_filters ?? []).includes(mood.id);
+              return (
+                <TouchableOpacity
+                  key={mood.id}
+                  style={[styles.chip, active && styles.chipActive]}
+                  onPress={() => {
+                    const filters = draft.pref_mood_filters ?? [];
+                    const next = active
+                      ? filters.filter((m) => m !== mood.id)
+                      : [...filters, mood.id];
+                    onPatch({ pref_mood_filters: next });
+                  }}
+                >
+                  <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                    {mood.emoji} {mood.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </PremiumSection>
       </View>
 
       <View style={styles.divider} />

@@ -25,9 +25,13 @@ import {
   normalizePhotoUrl,
   uploadProfilePhoto,
 } from './photoService';
+import type { Database } from '../types/database';
+import { computeCompatibility } from './aiService';
 import { supabase } from './supabase';
 
 export { deleteProfilePhoto, deleteProfileVideo, uploadInstagramPhoto, uploadProfilePhoto, uploadProfileVideo } from './photoService';
+
+const USE_DISCOVERY_RPC = true;
 
 function mapProfile(row: Record<string, unknown>): UserProfile {
   const profile = row as unknown as UserProfile;
@@ -77,6 +81,20 @@ function mapProfile(row: Record<string, unknown>): UserProfile {
     video_intro_url: profile.video_intro_url
       ? normalizePhotoUrl(profile.video_intro_url)
       : null,
+    quiz_answers: (profile.quiz_answers as Record<string, string>) ?? {},
+    profile_prompts: Array.isArray(profile.profile_prompts) ? profile.profile_prompts : [],
+    current_mood: profile.current_mood ?? null,
+    mood_updated_at: profile.mood_updated_at ?? null,
+    voice_bio_url: profile.voice_bio_url ?? null,
+    vibe_clip_url: profile.vibe_clip_url ?? null,
+    voice_vibe_summary: profile.voice_vibe_summary ?? null,
+    last_active_at: profile.last_active_at ?? null,
+    respectful_dater_badge: Boolean(profile.respectful_dater_badge),
+    verification_status: profile.verification_status ?? 'none',
+    pref_match_mood: Boolean(profile.pref_match_mood),
+    pref_mood_filters: Array.isArray(profile.pref_mood_filters)
+      ? profile.pref_mood_filters.filter((m): m is string => typeof m === 'string')
+      : [],
   };
 }
 
@@ -213,6 +231,56 @@ export async function canSwipe(userId: string): Promise<{
 }
 
 export async function fetchCandidates(
+  userId: string,
+  radiusMi: number,
+): Promise<Candidate[]> {
+  if (USE_DISCOVERY_RPC) {
+    try {
+      return await fetchCandidatesViaRpc(userId, radiusMi);
+    } catch {
+      // Fall back to client-side filtering
+    }
+  }
+  return fetchCandidatesClientSide(userId, radiusMi);
+}
+
+async function fetchCandidatesViaRpc(
+  userId: string,
+  radiusMi: number,
+): Promise<Candidate[]> {
+  const { data, error } = await supabase.rpc('get_discovery_candidates', {
+    p_user_id: userId,
+    p_radius_mi: radiusMi,
+    p_limit: 50,
+  });
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row) => {
+    const record = row as Record<string, unknown>;
+    const profile = mapProfile(record);
+    const breakdown = record.ai_overall_score
+      ? {
+          overall_score: record.ai_overall_score as number,
+          chemistry_score: (record.ai_chemistry_score as number) ?? 0,
+          emotional_resonance: (record.ai_emotional_resonance as number) ?? 0,
+          communication_compat: (record.ai_communication_compat as number) ?? 0,
+          humor_alignment: (record.ai_humor_alignment as number) ?? 0,
+        }
+      : undefined;
+
+    return {
+      ...profile,
+      distanceMi: record.distance_mi as number,
+      quizScore: record.quiz_score as number,
+      locationScore: record.location_score as number,
+      compatibilityScore: (record.ai_overall_score as number) ?? (record.compatibility_score as number),
+      compatibilityBreakdown: breakdown,
+    };
+  });
+}
+
+async function fetchCandidatesClientSide(
   userId: string,
   radiusMi: number,
 ): Promise<Candidate[]> {
@@ -375,6 +443,10 @@ export async function recordSwipe(
         .single();
 
       if (matchError) throw new Error(matchError.message);
+
+      // Trigger AI compatibility compute in background
+      computeCompatibility(userId, targetId).catch(() => {});
+
       return { matched: true, matchId: match.id };
     }
   }
@@ -518,12 +590,32 @@ export async function updateProfile(
         | 'instagram_photos'
         | 'quiz_vector'
         | 'quiz_completed'
+        | 'quiz_answers'
+        | 'profile_prompts'
+        | 'flirting_style'
+        | 'humor_type'
+        | 'current_mood'
+        | 'mood_updated_at'
+        | 'voice_bio_url'
+        | 'vibe_clip_url'
+        | 'voice_vibe_summary'
+        | 'pref_match_mood'
+        | 'pref_mood_filters'
+        | 'verification_status'
       >
   >,
 ): Promise<UserProfile> {
+  const payload = { ...updates } as Database['public']['Tables']['profiles']['Update'];
+  if (updates.profile_prompts) {
+    payload.profile_prompts = updates.profile_prompts as unknown as Database['public']['Tables']['profiles']['Update']['profile_prompts'];
+  }
+  if (updates.quiz_answers) {
+    payload.quiz_answers = updates.quiz_answers as unknown as Database['public']['Tables']['profiles']['Update']['quiz_answers'];
+  }
+
   const { data, error } = await supabase
     .from('profiles')
-    .update(updates)
+    .update(payload)
     .eq('id', userId)
     .select('*')
     .single();

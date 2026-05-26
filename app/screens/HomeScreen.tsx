@@ -28,6 +28,12 @@ import { APP_SLOGAN, COLORS, FREE_LIKED_YOU_PREVIEW, HITITOFF_PRO_UPGRADE_BLURB 
 import { headerText, navHeaderText } from '../utils/typography';
 import { getDevMockLikesReceived } from '../utils/mockLikedYou';
 import type { MainTabParamList, MatchRecord, RootStackParamList, UserProfile } from '../types';
+import { MoodSelector } from '../components/MoodSelector';
+import { AnimatedStatCard } from '../components/AnimatedStatCard';
+import { QuickActionOrb } from '../components/QuickActionOrb';
+import { setMood } from '../services/moodService';
+import { hapticLight } from '../utils/haptics';
+import type { MoodId } from '../utils/moodData';
 
 interface HomeScreenProps {
   userId: string;
@@ -69,9 +75,12 @@ export function HomeScreen({ userId }: HomeScreenProps) {
     checkSwipeLimit,
     triggerBoost,
   } = useMatchStore();
+  const unreadMessageCount = useMatchStore((s) => s.unreadMessageCount);
   const { hasPro: premium } = useHitItOffPro();
   const { checkPro } = useSubscriptionStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [statsResetKey, setStatsResetKey] = useState(0);
+  const [statsAnimKey, setStatsAnimKey] = useState(0);
   const boostActive = isBoostActive(profile?.boosted_until);
   const recentMatches = useMemo(() => matches.slice(0, 8), [matches]);
 
@@ -119,7 +128,18 @@ export function HomeScreen({ userId }: HomeScreenProps) {
 
   useFocusEffect(
     useCallback(() => {
-      refresh();
+      setStatsResetKey((key) => key + 1);
+
+      let active = true;
+      void (async () => {
+        await refresh();
+        if (!active) return;
+        setStatsAnimKey((key) => key + 1);
+        hapticLight();
+      })();
+      return () => {
+        active = false;
+      };
     }, [refresh]),
   );
 
@@ -261,68 +281,74 @@ export function HomeScreen({ userId }: HomeScreenProps) {
 
           <View style={styles.quickActions}>
             <TouchableOpacity style={styles.quickAction} onPress={() => tabNav.navigate('Swipe')}>
-              <View style={[styles.quickIcon, { backgroundColor: 'rgba(255,77,141,0.18)' }]}>
-                <Ionicons name="heart" size={22} color={COLORS.primary} />
-              </View>
+              <QuickActionOrb variant="discover" />
               <Text style={styles.quickLabel}>Discover</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickAction} onPress={() => tabNav.navigate('Matches')}>
-              <View style={[styles.quickIcon, { backgroundColor: 'rgba(255,143,171,0.15)' }]}>
-                <Ionicons name="chatbubbles" size={22} color={COLORS.accent} />
-              </View>
+              <QuickActionOrb variant="messages" showBadge={unreadMessageCount > 0} />
               <Text style={styles.quickLabel}>Messages</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickAction} onPress={handleBoost}>
-              <View style={[styles.quickIcon, { backgroundColor: 'rgba(250,204,21,0.15)' }]}>
-                <Ionicons name="flash" size={22} color="#facc15" />
-              </View>
+              <QuickActionOrb variant="boost" pulse boostActive={boostActive} />
               <Text style={styles.quickLabel}>Boost</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickAction} onPress={() => tabNav.navigate('Profile')}>
-              <View style={[styles.quickIcon, { backgroundColor: 'rgba(74,222,128,0.12)' }]}>
-                <Ionicons name="person" size={22} color={COLORS.success} />
-              </View>
+              <QuickActionOrb variant="profile" />
               <Text style={styles.quickLabel}>Profile</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.statsGrid}>
-            <TouchableOpacity
-              style={styles.statCard}
+            <AnimatedStatCard
+              value={candidates.length}
+              label="Nearby"
+              resetTrigger={statsResetKey}
+              animationTrigger={statsAnimKey}
+              delayMs={0}
               onPress={() => tabNav.navigate('Swipe')}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.statValue}>{candidates.length}</Text>
-              <Text style={styles.statLabel}>Nearby</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.statCard}
+            />
+            <AnimatedStatCard
+              value={matches.length}
+              label="Matches"
+              resetTrigger={statsResetKey}
+              animationTrigger={statsAnimKey}
+              delayMs={60}
               onPress={() => tabNav.navigate('Matches')}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.statValue}>{matches.length}</Text>
-              <Text style={styles.statLabel}>Matches</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.statCard}
+            />
+            <AnimatedStatCard
+              value={likesRemaining}
+              label="Likes left"
+              infinity={premium}
+              resetTrigger={statsResetKey}
+              animationTrigger={statsAnimKey}
+              delayMs={120}
               onPress={() => tabNav.navigate('Swipe')}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.statValue}>{premium ? '∞' : likesRemaining}</Text>
-              <Text style={styles.statLabel}>Likes left</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.statCard}
+            />
+            <AnimatedStatCard
+              value={likesReceived.length}
+              label="Liked you"
+              resetTrigger={statsResetKey}
+              animationTrigger={statsAnimKey}
+              delayMs={180}
               onPress={() => tabNav.navigate('Matches')}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.statValue}>{likesReceived.length}</Text>
-              <Text style={styles.statLabel}>Liked you</Text>
-            </TouchableOpacity>
+            />
           </View>
+
+          {profile && (
+            <View style={styles.section}>
+              <MoodSelector
+                selectedMood={(profile.current_mood as MoodId) ?? null}
+                onSelect={async (mood) => {
+                  await setMood(userId, mood);
+                  await loadProfile(userId);
+                  await loadCandidates(userId, radiusMi);
+                }}
+              />
+            </View>
+          )}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Dating Preferences</Text>
@@ -502,14 +528,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   quickAction: { alignItems: 'center', flex: 1 },
-  quickIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
   quickLabel: { color: COLORS.textMuted, fontSize: 12, fontWeight: '600' },
   statsGrid: {
     flexDirection: 'row',
@@ -517,18 +535,6 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 16,
   },
-  statCard: {
-    width: '48%',
-    flexGrow: 1,
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  statValue: { color: COLORS.primary, fontSize: 28, fontWeight: '800' },
-  statLabel: { color: COLORS.textMuted, fontSize: 12, marginTop: 4 },
   boostCard: {
     flexDirection: 'row',
     alignItems: 'center',

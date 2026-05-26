@@ -2,17 +2,33 @@
 
 ## Product summary
 
-HitItOff is a compatibility-first dating application for iOS and Android. The app combines a personality quiz, compatibility scoring, and location-based discovery to help users find better local matches. Tagline: "Better Matches, Closer."
+HitItOff is an AI-powered, compatibility-first dating application for iOS and Android. The app combines a personality quiz, multi-dimensional compatibility scoring, mood-based discovery, AI conversation starters, chemistry tracking, voice bios, date planning, and safety tools to help users find better local matches. Tagline: "Better Matches, Closer."
 
 ## Core features (free)
 
-- Personality quiz matching
+- Personality quiz matching + profile prompts
 - Swipe to discover nearby singles
 - Up to 20 likes per day
 - 3 messages per match on free plan
 - Search radius up to 3 miles
-- Basic discovery filters
+- Compatibility scores on profiles
+- Live mood selection for discovery
+- 3 AI conversation starters per day
+- Spark meter and basic chemistry in chat
+- Quick responses and respectful dater badges
+- Report, block, and AI message moderation
 - Mutual like required to match and chat
+
+## AI-powered features
+
+- AI compatibility engine (chemistry, emotional resonance, communication fit, humor alignment)
+- AI conversation starters (funny, flirty, deep, romantic tones)
+- Mood-based matching (deep talks, flirty, adventurous, serious, chill, spontaneous)
+- HitItOff chemistry system (spark meter, chemistry timeline)
+- Voice bios and vibe clips with AI personality summaries
+- No-ghosting tools (respectful dater badge, quick responses, gentle nudges)
+- Real-world date integration (AI-curated suggestions, nearby places, map support)
+- Safety system (AI moderation, scam detection, report/block, verification hooks)
 
 ## HitItOff Pro features
 
@@ -23,6 +39,12 @@ HitItOff is a compatibility-first dating application for iOS and Android. The ap
 - See who liked you
 - View all profile photos
 - Compatibility scores on every profile
+- Advanced AI compatibility insights
+- Unlimited AI conversation starters
+- Advanced mood filters
+- Chemistry analytics and timeline
+- AI voice vibe summaries
+- Priority visibility in discovery
 - Send and receive super likes
 - 20-second video intro
 - Profile boosts
@@ -32,24 +54,30 @@ HitItOff is a compatibility-first dating application for iOS and Android. The ap
 
 ## How matching works
 
-1. Users complete a compatibility quiz covering personality, lifestyle, values, humor, and relationship preferences.
-2. HitItOff calculates compatibility using quiz similarity combined with distance within the selected search radius.
-3. Users swipe on profiles in their discovery feed.
-4. When both users like each other, they match and can chat.
+1. Users complete a compatibility quiz and optional profile prompts covering personality, lifestyle, values, and humor.
+2. Users set their current mood to personalize discovery.
+3. HitItOff calculates compatibility using quiz similarity combined with distance within the selected search radius. AI adds multi-dimensional compatibility breakdowns.
+4. Users swipe on profiles in their discovery feed, seeing compatibility scores and mood badges.
+5. When both users like each other, they match and can chat with AI conversation starters.
+6. Chemistry tracking, quick responses, voice messages, and date suggestions enhance the conversation.
+7. Safety tools (moderation, report, block) keep the experience respectful.
 
 ## FAQ
 
 Q: What is HitItOff?
-A: HitItOff is a compatibility-first dating app that helps you meet singles nearby using a personality quiz, compatibility scores, and local discovery.
+A: HitItOff is an AI-powered, compatibility-first dating app that helps you meet singles nearby using a personality quiz, compatibility scores, mood-based discovery, AI conversation starters, and chemistry tracking.
 
 Q: Is HitItOff free?
-A: Yes. A free plan is available. HitItOff Pro adds unlimited likes and messages, larger radius, advanced filters, video intros, boosts, and an ad-free experience.
+A: Yes. A free plan is available with core matching and limited AI tools. HitItOff Pro adds unlimited likes and messages, larger radius, advanced AI insights, unlimited openers, mood filters, chemistry analytics, voice summaries, boosts, and an ad-free experience.
+
+Q: What AI features are included?
+A: AI compatibility breakdowns, conversation starters, mood matching, chemistry spark meter and timeline, voice vibe summaries, date suggestions, and message moderation.
 
 Q: What age is required?
 A: Users must be 18 or older.
 
 Q: Does HitItOff use location?
-A: Yes, with permission, to show nearby profiles and calculate distance-based compatibility.
+A: Yes, with permission, to show nearby profiles, calculate distance-based compatibility, and suggest local date ideas.
 
 Q: Is the app available now?
 A: HitItOff is launching soon on iOS and Android. Join the waitlist at https://hititoff.vercel.app/#waitlist

@@ -1,9 +1,11 @@
 import { create } from 'zustand';
-import type { CustomerInfo, PurchasesOfferings, PurchasesPackage } from 'react-native-purchases';
+import type { CustomerInfo, PurchasesOffering, PurchasesOfferings, PurchasesPackage } from 'react-native-purchases';
 import {
   checkHitItOffProEntitlement,
+  getActiveOffering,
   getCustomerInfo,
   getOfferings,
+  getRevenueCatDiagnostics,
   getSubscriptionPackages,
   parsePurchaseError,
   presentCustomerCenter,
@@ -25,6 +27,7 @@ interface SubscriptionState {
   isPremium: boolean;
   customerInfo: CustomerInfo | null;
   offerings: PurchasesOfferings | null;
+  activeOffering: PurchasesOffering | null;
   packages: PurchasesPackage[];
   activeProductId: string | null;
   expirationDate: string | null;
@@ -59,6 +62,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   isPremium: false,
   customerInfo: null,
   offerings: null,
+  activeOffering: null,
   packages: [],
   activeProductId: null,
   expirationDate: null,
@@ -73,10 +77,19 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const offerings = await getOfferings();
+      const activeOffering = getActiveOffering(offerings);
+      const packages = getSubscriptionPackages(offerings);
+      const diagnostics = getRevenueCatDiagnostics(offerings);
       set({
         offerings,
-        packages: getSubscriptionPackages(offerings),
+        activeOffering,
+        packages,
         isLoading: false,
+        error:
+          activeOffering && packages.length > 0
+            ? null
+            : diagnostics.lastError ??
+              `No subscription products loaded for offering "${diagnostics.offeringId}".`,
       });
     } catch (e) {
       set({
@@ -184,6 +197,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       isPremium: false,
       customerInfo: null,
       offerings: null,
+      activeOffering: null,
       packages: [],
       activeProductId: null,
       expirationDate: null,

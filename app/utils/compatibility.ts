@@ -1,3 +1,8 @@
+import {
+  computeCompatibility,
+  getCompatibilityFromCache,
+  type CompatibilityBreakdown,
+} from '../services/aiService';
 import { COMPATIBILITY_THRESHOLD, LOCATION_WEIGHT, QUIZ_WEIGHT } from './constants';
 
 export function cosineSimilarity(a: number[], b: number[]): number {
@@ -35,3 +40,32 @@ export function meetsCompatibilityThreshold(
 ): boolean {
   return finalCompatibility(quizScore, locScore) >= COMPATIBILITY_THRESHOLD;
 }
+
+export async function getCompatibilityBreakdown(
+  userIdA: string,
+  userIdB: string,
+  fallbackQuizScore?: number,
+  fallbackLocScore?: number,
+): Promise<CompatibilityBreakdown> {
+  try {
+    const cached = await getCompatibilityFromCache(userIdA, userIdB);
+    if (cached) return cached;
+
+    const result = await computeCompatibility(userIdA, userIdB);
+    return result;
+  } catch {
+    const overall = fallbackQuizScore !== undefined && fallbackLocScore !== undefined
+      ? finalCompatibility(fallbackQuizScore, fallbackLocScore)
+      : 70;
+    return {
+      overall_score: overall,
+      chemistry_score: fallbackQuizScore ?? overall,
+      emotional_resonance: fallbackQuizScore ?? overall,
+      communication_compat: Math.round((overall + (fallbackQuizScore ?? overall)) / 2),
+      humor_alignment: fallbackQuizScore ?? overall,
+      factors: { method: 'fallback' },
+    };
+  }
+}
+
+export type { CompatibilityBreakdown };

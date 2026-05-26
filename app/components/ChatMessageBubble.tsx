@@ -2,12 +2,14 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../utils/constants';
 import type { Message } from '../types';
+import { WaveformPlayer } from './WaveformPlayer';
 
 interface ChatMessageBubbleProps {
   message: Message;
   userId: string;
   compact?: boolean;
   onDelete: (messageId: string) => void;
+  onCheckMessage?: (text: string) => void;
 }
 
 export function ChatMessageBubble({
@@ -15,6 +17,7 @@ export function ChatMessageBubble({
   userId,
   compact = false,
   onDelete,
+  onCheckMessage,
 }: ChatMessageBubbleProps) {
   const isMine = message.sender_id === userId;
   const isRead = message.read_by.some((id) => id !== message.sender_id);
@@ -30,11 +33,27 @@ export function ChatMessageBubble({
     ]);
   };
 
+  const handleLongPress = () => {
+    if (isMine) {
+      confirmDelete();
+      return;
+    }
+    if (onCheckMessage && message.text && message.message_type !== 'voice') {
+      Alert.alert('Message options', undefined, [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Check this message',
+          onPress: () => onCheckMessage(message.text),
+        },
+      ]);
+    }
+  };
+
   return (
     <View style={[styles.bubbleRow, compact && styles.bubbleRowCompact, isMine && styles.bubbleRowMine]}>
       <TouchableOpacity
         activeOpacity={0.8}
-        onLongPress={isMine ? confirmDelete : undefined}
+        onLongPress={handleLongPress}
         delayLongPress={400}
         style={[
           styles.bubble,
@@ -43,7 +62,11 @@ export function ChatMessageBubble({
         ]}
       >
         <Text style={[styles.bubbleText, compact && styles.bubbleTextCompact]}>
-          {message.text}
+          {message.message_type === 'voice' && message.audio_url ? (
+            <WaveformPlayer />
+          ) : (
+            message.text
+          )}
         </Text>
         {!compact && (
           <View style={styles.meta}>

@@ -13,6 +13,10 @@ import { AppScrollView } from '../components/AppScrollView';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import RevenueCatUI from 'react-native-purchases-ui';
+import {
+  getRevenueCatDiagnostics,
+  parsePurchaseError,
+} from '../services/revenuecat';
 import { useHitItOffPro } from '../hooks/useHitItOffPro';
 import { useSubscriptionStore } from '../store/subscriptionStore';
 import { useUserStore } from '../store/userStore';
@@ -27,7 +31,8 @@ interface PaywallScreenProps {
 export function PaywallScreen({ userId }: PaywallScreenProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { hasPro, expirationDate } = useHitItOffPro();
-  const { loadOfferings, refreshCustomerInfo } = useSubscriptionStore();
+  const { loadOfferings, refreshCustomerInfo, activeOffering, packages, error, offerings } =
+    useSubscriptionStore();
   const { loadProfile } = useUserStore();
   const [ready, setReady] = useState(false);
 
@@ -102,6 +107,55 @@ export function PaywallScreen({ userId }: PaywallScreenProps) {
     );
   }
 
+  const hasOfferings = Boolean(activeOffering?.availablePackages.length || packages.length);
+  const diagnostics = getRevenueCatDiagnostics(offerings);
+
+  if (!hasOfferings) {
+    const diagnosticLines = [
+      `Key: ${diagnostics.apiKeyMasked} (${diagnostics.apiKeyConfigured ? 'set' : 'MISSING — rebuild with EAS env'})`,
+      `Bundle: ${diagnostics.bundleId}`,
+      `Offering: ${diagnostics.offeringId}${diagnostics.activeOfferingId ? ` → ${diagnostics.activeOfferingId}` : ' (not found)'}`,
+      diagnostics.availableOfferingIds.length
+        ? `Available offerings: ${diagnostics.availableOfferingIds.join(', ')}`
+        : null,
+      diagnostics.packageCount
+        ? `Packages: ${diagnostics.packageCount}, with prices: ${diagnostics.packagesWithPrices}`
+        : null,
+      diagnostics.storeProductIds.length
+        ? `Store products: ${diagnostics.storeProductIds.join(', ')}`
+        : `Expected: ${diagnostics.expectedProductIds.join(', ')}`,
+    ].filter(Boolean);
+
+    return (
+      <SafeAreaView style={styles.container}>
+        <TouchableOpacity style={styles.closeIcon} onPress={() => navigation.goBack()}>
+          <Ionicons name="close" size={28} color={COLORS.text} />
+        </TouchableOpacity>
+        <AppScrollView contentContainerStyle={styles.configError}>
+          <Ionicons name="alert-circle-outline" size={56} color={COLORS.primary} />
+          <Text style={styles.configErrorTitle}>Subscriptions unavailable</Text>
+          <Text style={styles.configErrorText}>
+            {error ??
+              diagnostics.lastError ??
+              'RevenueCat could not load subscription products (Error 23). StoreKit failed to fetch prices from App Store Connect.'}
+          </Text>
+          <Text style={styles.configErrorHint}>
+            {diagnosticLines.join('\n')}
+          </Text>
+          <Text style={styles.configErrorHint}>
+            In RevenueCat, confirm the iOS app uses bundle ID {diagnostics.bundleId} and offering
+            "{diagnostics.offeringId}" links iOS products com.luvii.app.weekly, .monthly, .yearly.
+            In App Store Connect, subscriptions must be Ready to Submit and attached to your TestFlight
+            version. Rebuild after changing EAS env vars.
+          </Text>
+          <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
+            <Text style={styles.closeBtnText}>Go back</Text>
+          </TouchableOpacity>
+        </AppScrollView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.closeIcon} onPress={() => navigation.goBack()}>
@@ -109,11 +163,15 @@ export function PaywallScreen({ userId }: PaywallScreenProps) {
       </TouchableOpacity>
 
       <RevenueCatUI.Paywall
-        options={{ displayCloseButton: false }}
+        options={{
+          displayCloseButton: false,
+          offering: activeOffering ?? undefined,
+        }}
         onPurchaseCompleted={handlePurchaseCompleted}
         onRestoreCompleted={handleRestoreCompleted}
         onPurchaseError={({ error: purchaseError }) => {
-          Alert.alert('Purchase failed', purchaseError.message);
+          const message = parsePurchaseError(purchaseError);
+          Alert.alert('Purchase failed', message);
         }}
         onRestoreError={({ error: restoreError }) => {
           Alert.alert('Restore failed', restoreError.message);
@@ -133,6 +191,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   closeIcon: { position: 'absolute', top: 56, right: 20, zIndex: 10 },
+  configError: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    paddingTop: 72,
+    gap: 12,
+  },
+  configErrorTitle: {
+    ...headerText,
+    color: COLORS.text,
+    fontSize: 22,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  configErrorText: {
+    color: COLORS.textMuted,
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  configErrorHint: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginTop: 4,
+  },
   proActive: {
     alignItems: 'center',
     padding: 24,

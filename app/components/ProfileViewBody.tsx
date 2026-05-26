@@ -4,6 +4,7 @@ import { headerText } from '../utils/typography';
 import { AppScrollView } from './AppScrollView';
 import { InstagramSection } from './InstagramSection';
 import { ProfileMediaGallery } from './ProfileMediaGallery';
+import { VoiceBioSection } from './VoiceBioSection';
 
 const { width } = Dimensions.get('window');
 
@@ -17,6 +18,8 @@ interface ProfileViewBodyProps {
   instagramUsername?: string | null;
   instagramPhotos?: string[];
   photosUnlocked?: boolean;
+  voiceBioUrl?: string | null;
+  voiceVibeSummary?: string | null;
 }
 
 export function ProfileViewBody({
@@ -29,6 +32,8 @@ export function ProfileViewBody({
   instagramUsername = null,
   instagramPhotos = [],
   photosUnlocked = true,
+  voiceBioUrl,
+  voiceVibeSummary,
 }: ProfileViewBodyProps) {
   const photoHeight = width - 48;
 
@@ -49,6 +54,11 @@ export function ProfileViewBody({
           {name}, {age}
         </Text>
         {bio ? <Text style={styles.bio}>{bio}</Text> : null}
+
+        <VoiceBioSection
+          voiceBioUrl={voiceBioUrl}
+          vibeSummary={voiceVibeSummary}
+        />
 
         {interests.length > 0 && (
           <AppScrollView horizontal>

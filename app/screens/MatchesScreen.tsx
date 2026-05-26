@@ -4,7 +4,7 @@ import { ProfilePhoto } from '../components/ProfilePhoto';
 import { AppFlatList } from '../components/AppFlatList';
 import { AppScrollView } from '../components/AppScrollView';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
   StyleSheet,
@@ -16,14 +16,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LikedYouCard, LikedYouPlaceholder } from '../components/LikedYouCard';
 import { MatchSwipeRow } from '../components/MatchSwipeRow';
-import { deleteAllOwnMessagesInMatch } from '../services/chatService';
+import { DateInviteInboxRow } from '../components/DateInviteInboxRow';
+import { deleteAllOwnMessagesInMatch, getInboxDateInvites, markAsRead } from '../services/chatService';
 import { useHitItOffPro } from '../hooks/useHitItOffPro';
 import { useMatchStore } from '../store/matchStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
 import { COLORS, FREE_LIKED_YOU_PREVIEW } from '../utils/constants';
 import { headerText } from '../utils/typography';
 import { getDevMockLikesReceived } from '../utils/mockLikedYou';
-import type { MatchRecord, RootStackParamList, UserProfile } from '../types';
+import type { InboxDateInvite, MatchRecord, RootStackParamList, UserProfile } from '../types';
 
 interface MatchesScreenProps {
   userId: string;
@@ -41,6 +42,7 @@ export function MatchesScreen({ userId }: MatchesScreenProps) {
   } = useMatchStore();
   const { hasPro: premium } = useHitItOffPro();
   const { checkPro } = useSubscriptionStore();
+  const [dateInvites, setDateInvites] = useState<InboxDateInvite[]>([]);
 
   const displayLikesReceived = useMemo(
     () => getDevMockLikesReceived(likesReceived),
@@ -57,19 +59,41 @@ export function MatchesScreen({ userId }: MatchesScreenProps) {
     [displayLikesReceived],
   );
 
+  const inviteMatchIds = useMemo(
+    () => new Set(dateInvites.map((invite) => invite.matchId)),
+    [dateInvites],
+  );
+
   const conversationMatches = useMemo(
     () =>
       matches.filter(
         (match) =>
-          !dismissedMessageMatchIds.includes(match.id) && Boolean(match.last_message_at),
+          !dismissedMessageMatchIds.includes(match.id) &&
+          Boolean(match.last_message_at) &&
+          !inviteMatchIds.has(match.id),
       ),
-    [matches, dismissedMessageMatchIds],
+    [matches, dismissedMessageMatchIds, inviteMatchIds],
   );
 
   const refresh = useCallback(async () => {
     await checkPro(userId);
     await loadMatches(userId);
     await loadLikesReceived(userId);
+
+    const activeMatches = useMatchStore
+      .getState()
+      .matches.filter(
+        (match) =>
+          !useMatchStore.getState().dismissedMessageMatchIds.includes(match.id) &&
+          Boolean(match.last_message_at),
+      );
+
+    try {
+      const invites = await getInboxDateInvites(userId, activeMatches);
+      setDateInvites(invites);
+    } catch {
+      setDateInvites([]);
+    }
   }, [userId, checkPro, loadMatches, loadLikesReceived]);
 
   useFocusEffect(
@@ -166,6 +190,41 @@ export function MatchesScreen({ userId }: MatchesScreenProps) {
           {other.name}
         </Text>
       </TouchableOpacity>
+    );
+  };
+
+  const handleInvitePress = (invite: InboxDateInvite) => {
+    const other = invite.otherUser;
+    if (!other) return;
+
+    void markAsRead(invite.matchId, userId).then(() => {
+      setDateInvites((current) =>
+        current.map((item) =>
+          item.messageId === invite.messageId ? { ...item, isUnread: false } : item,
+        ),
+      );
+    });
+
+    openUserProfile(other, { matchId: invite.matchId });
+  };
+
+  const renderInviteHeader = () => {
+    if (dateInvites.length === 0) return null;
+
+    return (
+      <View style={styles.invitesBlock}>
+        <Text style={styles.invitesSubtitle}>Date invites</Text>
+        {dateInvites.map((invite) => (
+          <DateInviteInboxRow
+            key={invite.messageId}
+            invite={invite}
+            onPress={() => handleInvitePress(invite)}
+          />
+        ))}
+        {conversationMatches.length > 0 ? (
+          <Text style={styles.chatsSubtitle}>Chats</Text>
+        ) : null}
+      </View>
     );
   };
 
@@ -274,7 +333,7 @@ export function MatchesScreen({ userId }: MatchesScreenProps) {
 
         <View style={styles.messagesSection}>
           <Text style={styles.sectionTitle}>Messages</Text>
-          {conversationMatches.length === 0 ? (
+          {dateInvites.length === 0 && conversationMatches.length === 0 ? (
             <View style={styles.empty}>
               <Ionicons name="chatbubbles-outline" size={32} color={COLORS.textMuted} />
               <Text style={styles.emptyText}>{emptyMessagesCopy}</Text>
@@ -285,8 +344,9 @@ export function MatchesScreen({ userId }: MatchesScreenProps) {
               data={conversationMatches}
               keyExtractor={(item) => item.id}
               renderItem={renderConversation}
+              ListHeaderComponent={renderInviteHeader}
               contentContainerStyle={styles.list}
-              extraData={dismissedMessageMatchIds}
+              extraData={[dismissedMessageMatchIds, dateInvites]}
             />
           )}
         </View>
@@ -305,6 +365,26 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: 16,
     marginBottom: 12,
+  },
+  invitesBlock: {
+    marginBottom: 4,
+  },
+  invitesSubtitle: {
+    color: COLORS.accent,
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  chatsSubtitle: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 6,
+    marginBottom: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   likedYouHint: {
     color: COLORS.textMuted,

@@ -1,8 +1,8 @@
 # HitItOff
 
-> Better Matches, Closer — a compatibility-first dating app.
+> Better Matches, Closer — an AI-powered compatibility dating app.
 
-HitItOff helps adults meet nearby singles using personality quiz matching, compatibility scores, local discovery, video intros, and smart filters. Launching soon on iOS and Android.
+HitItOff helps adults meet nearby singles using personality quiz matching, AI compatibility scores, mood-based discovery, conversation starters, chemistry tracking, voice bios, date ideas, and safety tools. Launching soon on iOS and Android.
 
 ## Key pages
 

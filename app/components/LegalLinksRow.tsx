@@ -1,5 +1,5 @@
 import * as WebBrowser from 'expo-web-browser';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import {
   COLORS,
@@ -12,9 +12,9 @@ async function openLegalUrl(url: string) {
   await WebBrowser.openBrowserAsync(url);
 }
 
-export function LegalLinksRow() {
+export function LegalLinksRow({ style }: { style?: StyleProp<ViewStyle> }) {
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, style]}>
       <TouchableOpacity onPress={() => void openLegalUrl(TERMS_OF_SERVICE_URL)}>
         <Text style={styles.link}>Terms</Text>
       </TouchableOpacity>

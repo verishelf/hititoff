@@ -3,6 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../utils/constants';
 import { headerText } from '../utils/typography';
 import type { Candidate } from '../types';
+import { CompatibilityBreakdown } from './CompatibilityBreakdown';
+import { SparkMeter, INITIAL_SPARK_TEMPERATURE } from './SparkMeter';
 
 interface MatchModalProps {
   visible: boolean;
@@ -31,10 +33,25 @@ export function MatchModal({
             You and {matchedUser.name} liked each other
           </Text>
 
-          <View style={styles.scoreCircle}>
-            <Text style={styles.score}>{matchedUser.compatibilityScore}%</Text>
-            <Text style={styles.scoreLabel}>compatible</Text>
+          <View style={styles.scoreRow}>
+            <View style={styles.scoreCircle}>
+              <Text style={styles.score}>{matchedUser.compatibilityScore}%</Text>
+              <Text style={styles.scoreLabel}>compatible</Text>
+            </View>
+            <SparkMeter
+              value={INITIAL_SPARK_TEMPERATURE}
+              size={72}
+              label="Initial spark"
+              isInitialBaseline
+            />
           </View>
+
+          {matchedUser.compatibilityBreakdown && (
+            <CompatibilityBreakdown
+              breakdown={matchedUser.compatibilityBreakdown}
+              compact
+            />
+          )}
 
           <TouchableOpacity style={styles.primaryBtn} onPress={onChat}>
             <Text style={styles.primaryBtnText}>Send a Message</Text>
@@ -75,6 +92,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
   },
+  scoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 24,
+    marginBottom: 24,
+  },
   scoreCircle: {
     width: 120,
     height: 120,
@@ -82,7 +105,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 32,
+    marginBottom: 0,
   },
   score: {
     color: COLORS.text,

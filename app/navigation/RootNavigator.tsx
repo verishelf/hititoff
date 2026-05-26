@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ChatScreen } from '../screens/ChatScreen';
 import { CustomerCenterScreen } from '../screens/CustomerCenterScreen';
+import { PracticeModeScreen } from '../screens/PracticeModeScreen';
 import { PaywallScreen } from '../screens/PaywallScreen';
 import { UserProfileScreen } from '../screens/UserProfileScreen';
 import { COLORS } from '../utils/constants';
@@ -59,6 +60,12 @@ export function RootNavigator({ userId, onSignOut }: RootNavigatorProps) {
         options={{ title: 'Manage Subscription', presentation: 'modal' }}
       >
         {() => <CustomerCenterScreen userId={userId} />}
+      </Stack.Screen>
+      <Stack.Screen
+        name="PracticeMode"
+        options={{ title: 'Practice Mode', presentation: 'modal' }}
+      >
+        {() => <PracticeModeScreen userId={userId} />}
       </Stack.Screen>
     </Stack.Navigator>
   );

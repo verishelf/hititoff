@@ -16,6 +16,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons';
 import { AdBanner } from '../components/AdBanner';
 import { MatchModal } from '../components/MatchModal';
+import { QuickActionOrb } from '../components/QuickActionOrb';
 import { RadiusSelector } from '../components/RadiusSelector';
 import { SwipeDeck } from '../components/SwipeDeck';
 import { useHitItOffPro } from '../hooks/useHitItOffPro';
@@ -23,6 +24,7 @@ import { useMatchStore } from '../store/matchStore';
 import { useUserStore } from '../store/userStore';
 import { COLORS } from '../utils/constants';
 import { headerText } from '../utils/typography';
+import { getMoodEmoji, getMoodLabel } from '../utils/moodData';
 import type { Candidate, RootStackParamList, SwipeDirection } from '../types';
 
 const HEADER_HEIGHT = 56;
@@ -34,11 +36,16 @@ interface SwipeScreenProps {
   userId: string;
 }
 
+function isBoostActive(boostedUntil: string | null | undefined): boolean {
+  return Boolean(boostedUntil && new Date(boostedUntil).getTime() > Date.now());
+}
+
 export function SwipeScreen({ userId }: SwipeScreenProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const { profile, radiusMi, setRadius, refreshLocation } = useUserStore();
+  const { profile, radiusMi, setRadius, refreshLocation, loadProfile } = useUserStore();
+  const boostActive = isBoostActive(profile?.boosted_until);
   const [deckKey, setDeckKey] = useState(0);
   const {
     candidates,
@@ -124,6 +131,7 @@ export function SwipeScreen({ userId }: SwipeScreenProps) {
     }
     try {
       await triggerBoost(userId);
+      await loadProfile(userId);
       Alert.alert('Boost Active', 'Your profile is boosted for 30 minutes!');
       await refresh();
     } catch (e) {
@@ -185,15 +193,21 @@ export function SwipeScreen({ userId }: SwipeScreenProps) {
             }}
             onPremiumRequired={() => navigation.navigate('Paywall')}
           />
-          <TouchableOpacity onPress={handleBoost} style={styles.boostBtn}>
-            <Ionicons name="flash" size={20} color={COLORS.primary} />
+          <TouchableOpacity onPress={handleBoost} activeOpacity={0.85}>
+            <QuickActionOrb variant="boost" pulse boostActive={boostActive} compact />
           </TouchableOpacity>
           {__DEV__ ? (
-            <TouchableOpacity onPress={handleResetDiscover} style={styles.boostBtn}>
+            <TouchableOpacity onPress={handleResetDiscover} style={styles.iconBtn}>
               <Ionicons name="refresh" size={20} color={COLORS.textMuted} />
             </TouchableOpacity>
           ) : null}
         </View>
+
+        {profile?.current_mood && (
+          <Text style={styles.moodHint}>
+            {getMoodEmoji(profile.current_mood)} Showing matches for {getMoodLabel(profile.current_mood)} vibe
+          </Text>
+        )}
 
         {isLoading ? (
           <ActivityIndicator size="large" color={COLORS.primary} style={styles.loader} />
@@ -245,7 +259,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   title: { ...headerText, color: COLORS.text, fontSize: 24, flex: 1 },
-  boostBtn: {
+  moodHint: {
+    color: COLORS.textMuted,
+    fontSize: 12,
+    textAlign: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 4,
+  },
+  iconBtn: {
     backgroundColor: COLORS.card,
     padding: 10,
     borderRadius: 20,

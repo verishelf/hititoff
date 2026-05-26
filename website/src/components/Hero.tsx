@@ -27,13 +27,13 @@ export function Hero() {
             {APP_SLOGAN}
           </p>
           <h1 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-            The compatibility dating app for{" "}
+            The AI-powered dating app for{" "}
             <span className="gradient-text">better matches, closer</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-text-muted">
-            HitItOff uses a personality quiz, compatibility scores, and local discovery
-            to help you meet singles who actually fit — not just another endless swipe
-            deck.
+            HitItOff uses personality quiz matching, AI compatibility insights, mood-based
+            discovery, conversation starters, and chemistry tracking to help you meet
+            singles who actually fit — not just another endless swipe deck.
           </p>
           <div className="mt-8">
             <StoreBadges />
@@ -58,16 +58,16 @@ export function Hero() {
           <div className="glass-card relative rounded-3xl p-6 sm:p-8">
             <Image
               src="/logo.png"
-              alt={`${APP_NAME} — compatibility dating app logo`}
+              alt={`${APP_NAME} — AI compatibility dating app logo`}
               width={320}
               height={320}
               className="mx-auto rounded-3xl"
               priority
             />
             <ul className="mt-6 space-y-3 text-sm text-text-muted">
-              <li>✓ Personality quiz compatibility scoring</li>
-              <li>✓ Local discovery with smart radius filters</li>
-              <li>✓ Video intros and Instagram profile support</li>
+              <li>✓ AI compatibility & chemistry scores</li>
+              <li>✓ Mood-based discovery & conversation starters</li>
+              <li>✓ Voice bios, date ideas & safety tools</li>
               <li>✓ Match, chat, and upgrade to HitItOff Pro</li>
             </ul>
           </div>

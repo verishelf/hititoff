@@ -13,6 +13,7 @@ import {
   recordSwipe,
   resetDiscover as resetDiscoverService,
 } from '../services/matchService';
+import { getUnreadMessageCount } from '../services/chatService';
 
 interface MatchState {
   candidates: Candidate[];
@@ -20,6 +21,7 @@ interface MatchState {
   likesReceived: LikeReceived[];
   dismissedMessageMatchIds: string[];
   inboxUserId: string | null;
+  unreadMessageCount: number;
   likesRemaining: number;
   isPremium: boolean;
   isLoading: boolean;
@@ -50,6 +52,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
   likesReceived: [],
   dismissedMessageMatchIds: [],
   inboxUserId: null,
+  unreadMessageCount: 0,
   likesRemaining: 20,
   isPremium: false,
   isLoading: false,
@@ -73,11 +76,12 @@ export const useMatchStore = create<MatchState>((set, get) => ({
 
   loadMatches: async (userId) => {
     try {
-      const [matches, dismissedMessageMatchIds] = await Promise.all([
+      const [matches, dismissedMessageMatchIds, unreadMessageCount] = await Promise.all([
         getMatches(userId),
         loadDismissedMessageMatchIds(userId),
+        getUnreadMessageCount(userId),
       ]);
-      set({ matches, dismissedMessageMatchIds, inboxUserId: userId });
+      set({ matches, dismissedMessageMatchIds, inboxUserId: userId, unreadMessageCount });
     } catch (e) {
       set({
         error: e instanceof Error ? e.message : 'Failed to load matches',
@@ -181,6 +185,7 @@ export const useMatchStore = create<MatchState>((set, get) => ({
       likesReceived: [],
       dismissedMessageMatchIds: [],
       inboxUserId: null,
+      unreadMessageCount: 0,
       showMatchModal: false,
       matchedUser: null,
       error: null,

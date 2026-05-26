@@ -28,13 +28,15 @@ import {
 } from '../utils/constants';
 import { hapticLight, hapticSelection, hapticSuccess } from '../utils/haptics';
 import { headerText } from '../utils/typography';
+import { PROFILE_PROMPTS, type ProfilePrompt } from '../utils/profilePrompts';
+import { isValidPhoneNumber, normalizePhoneInput } from '../utils/phone';
 
 interface OnboardingScreenProps {
   userId: string;
   onComplete: () => void;
 }
 
-type OnboardingStep = 'photos' | 'name' | 'age' | 'gender' | 'looking_for' | 'bio' | 'interests';
+type OnboardingStep = 'photos' | 'name' | 'age' | 'gender' | 'looking_for' | 'bio' | 'prompts' | 'interests' | 'phone';
 
 const STEPS: OnboardingStep[] = [
   'photos',
@@ -43,7 +45,9 @@ const STEPS: OnboardingStep[] = [
   'gender',
   'looking_for',
   'bio',
+  'prompts',
   'interests',
+  'phone',
 ];
 
 const STEP_TITLES: Record<OnboardingStep, string> = {
@@ -53,7 +57,9 @@ const STEP_TITLES: Record<OnboardingStep, string> = {
   gender: 'I am',
   looking_for: "I'm looking for",
   bio: 'Tell us about yourself',
+  prompts: 'Answer a few prompts',
   interests: 'What are you into?',
+  phone: 'Your phone number',
 };
 
 const STEP_SUBTITLES: Record<OnboardingStep, string> = {
@@ -63,7 +69,9 @@ const STEP_SUBTITLES: Record<OnboardingStep, string> = {
   gender: 'Select the option that best describes you',
   looking_for: 'Who would you like to discover?',
   bio: 'Share a little about yourself (optional)',
+  prompts: 'Optional — helps our AI find better matches',
   interests: 'Pick up to 8 interests (optional)',
+  phone: 'Optional — saved privately so you can exchange numbers with matches later',
 };
 
 export function OnboardingScreen({ userId, onComplete }: OnboardingScreenProps) {
@@ -75,8 +83,10 @@ export function OnboardingScreen({ userId, onComplete }: OnboardingScreenProps) 
   const [gender, setGender] = useState<Gender | null>(null);
   const [lookingFor, setLookingFor] = useState<LookingFor | null>(null);
   const [interests, setInterests] = useState<string[]>([]);
+  const [profilePrompts, setProfilePrompts] = useState<ProfilePrompt[]>([]);
   const [photoUris, setPhotoUris] = useState<string[]>([]);
   const [photoMimeTypes, setPhotoMimeTypes] = useState<string[]>([]);
+  const [phoneNumber, setPhoneNumber] = useState('');
   const ageInputRef = useRef<TextInput>(null);
 
   const currentStep = STEPS[stepIndex];
@@ -170,6 +180,12 @@ export function OnboardingScreen({ userId, onComplete }: OnboardingScreenProps) 
           return false;
         }
         return true;
+      case 'phone':
+        if (phoneNumber.trim() && !isValidPhoneNumber(phoneNumber)) {
+          Alert.alert('Invalid number', 'Please enter a valid phone number or leave it blank');
+          return false;
+        }
+        return true;
       default:
         return true;
     }
@@ -189,6 +205,8 @@ export function OnboardingScreen({ userId, onComplete }: OnboardingScreenProps) 
         looking_for: lookingFor,
         photoUris,
         photoMimeTypes,
+        profilePrompts: profilePrompts.filter((p) => p.answer.trim()),
+        phoneNumber: phoneNumber.trim(),
       });
       hapticSuccess();
       onComplete();
@@ -338,6 +356,34 @@ export function OnboardingScreen({ userId, onComplete }: OnboardingScreenProps) 
           />
         );
 
+      case 'prompts':
+        return (
+          <AppScrollView style={styles.interestsScroll}>
+            {PROFILE_PROMPTS.slice(0, 3).map((prompt) => {
+              const existing = profilePrompts.find((p) => p.prompt === prompt);
+              return (
+                <View key={prompt} style={styles.promptBlock}>
+                  <Text style={styles.promptLabel}>{prompt}</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Your answer (optional)"
+                    placeholderTextColor={COLORS.textMuted}
+                    value={existing?.answer ?? ''}
+                    onChangeText={(answer) => {
+                      setProfilePrompts((prev) => {
+                        const filtered = prev.filter((p) => p.prompt !== prompt);
+                        if (!answer.trim()) return filtered;
+                        return [...filtered, { prompt, answer }];
+                      });
+                    }}
+                    maxLength={150}
+                  />
+                </View>
+              );
+            })}
+          </AppScrollView>
+        );
+
       case 'interests':
         return (
           <AppScrollView style={styles.interestsScroll}>
@@ -360,6 +406,22 @@ export function OnboardingScreen({ userId, onComplete }: OnboardingScreenProps) 
               ))}
             </View>
           </AppScrollView>
+        );
+
+      case 'phone':
+        return (
+          <TextInput
+            style={styles.input}
+            placeholder="(555) 123-4567"
+            placeholderTextColor={COLORS.textMuted}
+            value={phoneNumber}
+            onChangeText={(text) => setPhoneNumber(normalizePhoneInput(text))}
+            keyboardType="phone-pad"
+            textContentType="telephoneNumber"
+            autoComplete="tel"
+            maxLength={20}
+            autoFocus
+          />
         );
 
       default:
@@ -563,6 +625,15 @@ const styles = StyleSheet.create({
   },
   chipText: { color: COLORS.textMuted, fontSize: 14 },
   chipTextActive: { color: COLORS.text, fontWeight: '600' },
+  promptBlock: {
+    marginBottom: 16,
+  },
+  promptLabel: {
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
   footer: {
     flexDirection: 'row',
     padding: 24,

@@ -31,7 +31,7 @@ export function buildMetadata({
   const url = absoluteUrl(path);
   const fullTitle =
     path === "/"
-      ? `${APP_NAME} — ${APP_SLOGAN} | Compatibility Dating App`
+      ? `${APP_NAME} — ${APP_SLOGAN} | AI Compatibility Dating App`
       : `${title} | ${APP_NAME} — ${APP_SLOGAN}`;
 
   return {
@@ -181,7 +181,7 @@ export function faqPageJsonLd() {
 export const rootMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${APP_NAME} — ${APP_SLOGAN} | Compatibility Dating App`,
+    default: `${APP_NAME} — ${APP_SLOGAN} | AI Compatibility Dating App`,
     template: `%s | ${APP_NAME} — ${APP_SLOGAN}`,
   },
   description: DEFAULT_DESCRIPTION,

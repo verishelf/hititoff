@@ -4,11 +4,18 @@ import Purchases, {
   PURCHASES_ERROR_CODE,
   type CustomerInfo,
   type PurchasesError,
+  type PurchasesOffering,
   type PurchasesOfferings,
   type PurchasesPackage,
 } from 'react-native-purchases';
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
-import { HITITOFF_PRO_ENTITLEMENT, PACKAGE_IDS } from '../utils/constants';
+import {
+  HITITOFF_PRO_ENTITLEMENT,
+  IOS_BUNDLE_ID,
+  PACKAGE_IDS,
+  REVENUECAT_OFFERING_ID,
+  STORE_PRODUCT_IDS,
+} from '../utils/constants';
 import { isDevPremiumUser } from '../utils/devPremium';
 import { useUserStore } from '../store/userStore';
 import { syncPremiumStatus } from './matchService';
@@ -17,16 +24,109 @@ let initialized = false;
 let listenerUserId: string | null = null;
 let removeCustomerInfoListener: (() => void) | null = null;
 
-export type { CustomerInfo, PurchasesError, PurchasesOfferings, PurchasesPackage };
+export type { CustomerInfo, PurchasesError, PurchasesOffering, PurchasesOfferings, PurchasesPackage };
 export { PAYWALL_RESULT, PURCHASES_ERROR_CODE };
 
-function getApiKey(): string {
-  const testKey = process.env.EXPO_PUBLIC_REVENUECAT_API_KEY;
-  if (testKey) return testKey;
+function normalizeEnv(value: string | undefined): string {
+  return value?.trim().replace(/^["']|["']$/g, '') ?? '';
+}
 
-  return Platform.OS === 'ios'
-    ? (process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY ?? '')
-    : (process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? '');
+function getApiKey(): string {
+  const iosKey = normalizeEnv(process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY);
+  const androidKey = normalizeEnv(process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY);
+  const testKey = normalizeEnv(process.env.EXPO_PUBLIC_REVENUECAT_API_KEY);
+
+  // Platform keys always win — using test_/goog_ on iOS (or appl_ on Android) causes Error 23.
+  if (Platform.OS === 'ios') {
+    if (iosKey) return iosKey;
+    if (__DEV__ && testKey) return testKey;
+    return '';
+  }
+
+  if (Platform.OS === 'android') {
+    if (androidKey) return androidKey;
+    if (__DEV__ && testKey) return testKey;
+    return '';
+  }
+
+  return __DEV__ ? testKey : '';
+}
+
+function maskApiKey(apiKey: string): string {
+  if (!apiKey) return 'MISSING';
+  if (apiKey.length <= 12) return `${apiKey.slice(0, 5)}…`;
+  return `${apiKey.slice(0, 8)}…${apiKey.slice(-4)}`;
+}
+
+function validateApiKeyForPlatform(apiKey: string): void {
+  if (!apiKey) return;
+
+  const masked = maskApiKey(apiKey);
+  if (Platform.OS === 'ios' && !apiKey.startsWith('appl_') && !apiKey.startsWith('test_')) {
+    console.warn(
+      `[RevenueCat] iOS expects an appl_… API key; got "${masked}". This often causes Error 23.`,
+    );
+  }
+  if (Platform.OS === 'android' && !apiKey.startsWith('goog_') && !apiKey.startsWith('test_')) {
+    console.warn(
+      `[RevenueCat] Android expects a goog_… API key; got "${masked}". This often causes Error 23.`,
+    );
+  }
+}
+
+export type RevenueCatDiagnostics = {
+  platform: string;
+  bundleId: string;
+  apiKeyConfigured: boolean;
+  apiKeyMasked: string;
+  iosKeyConfigured: boolean;
+  androidKeyConfigured: boolean;
+  initialized: boolean;
+  offeringId: string;
+  entitlementId: string;
+  expectedProductIds: string[];
+  availableOfferingIds: string[];
+  activeOfferingId: string | null;
+  packageCount: number;
+  storeProductIds: string[];
+  packagesWithPrices: number;
+  lastError: string | null;
+};
+
+let lastRevenueCatError: string | null = null;
+
+export function getRevenueCatDiagnostics(
+  offerings: PurchasesOfferings | null = null,
+): RevenueCatDiagnostics {
+  const apiKey = getApiKey();
+  const active = getActiveOffering(offerings);
+  const packages = active?.availablePackages ?? [];
+  const storeProductIds = packages.map((pkg) => pkg.product.identifier);
+  const packagesWithPrices = packages.filter((pkg) => Boolean(pkg.product.priceString)).length;
+
+  return {
+    platform: Platform.OS,
+    bundleId: IOS_BUNDLE_ID,
+    apiKeyConfigured: Boolean(apiKey),
+    apiKeyMasked: maskApiKey(apiKey),
+    iosKeyConfigured: Boolean(normalizeEnv(process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY)),
+    androidKeyConfigured: Boolean(normalizeEnv(process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY)),
+    initialized,
+    offeringId: REVENUECAT_OFFERING_ID,
+    entitlementId: HITITOFF_PRO_ENTITLEMENT,
+    expectedProductIds: Object.values(STORE_PRODUCT_IDS),
+    availableOfferingIds: offerings ? Object.keys(offerings.all) : [],
+    activeOfferingId: active?.identifier ?? null,
+    packageCount: packages.length,
+    storeProductIds,
+    packagesWithPrices,
+    lastError: lastRevenueCatError,
+  };
+}
+
+function logRevenueCatDiagnostics(offerings: PurchasesOfferings | null = null): void {
+  const diagnostics = getRevenueCatDiagnostics(offerings);
+  console.warn('[RevenueCat] diagnostics', JSON.stringify(diagnostics, null, 2));
 }
 
 export function isRevenueCatConfigured(): boolean {
@@ -59,6 +159,12 @@ export function parsePurchaseError(error: unknown): string {
   }
   if (purchaseError?.code === PURCHASES_ERROR_CODE.STORE_PROBLEM_ERROR) {
     return 'App Store error. Please try again later.';
+  }
+  if (purchaseError?.code === PURCHASES_ERROR_CODE.CONFIGURATION_ERROR) {
+    return (
+      'Subscription configuration error. Verify your RevenueCat API key, product IDs, ' +
+      'and that subscriptions are set up in App Store Connect.'
+    );
   }
   if (purchaseError?.message) return purchaseError.message;
   if (error instanceof Error) return error.message;
@@ -94,9 +200,15 @@ export async function initializeRevenueCat(
 ): Promise<void> {
   const apiKey = getApiKey();
   if (!apiKey) {
+    lastRevenueCatError =
+      'RevenueCat API key missing in this build. Set EXPO_PUBLIC_REVENUECAT_IOS_KEY in EAS (production) and rebuild.';
     console.warn('[RevenueCat] API key missing — subscriptions disabled');
+    logRevenueCatDiagnostics();
     return;
   }
+
+  validateApiKeyForPlatform(apiKey);
+  lastRevenueCatError = null;
 
   if (__DEV__) {
     await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
@@ -152,12 +264,60 @@ export async function checkHitItOffProEntitlement(): Promise<boolean> {
   return info ? hasHitItOffProEntitlement(info) : false;
 }
 
+export function getActiveOffering(
+  offerings: PurchasesOfferings | null,
+): PurchasesOffering | null {
+  if (!offerings) return null;
+
+  const configured = offerings.all[REVENUECAT_OFFERING_ID];
+  if (configured) return configured;
+
+  if (__DEV__) {
+    console.warn(
+      `[RevenueCat] Offering "${REVENUECAT_OFFERING_ID}" not found. Available:`,
+      Object.keys(offerings.all).join(', ') || '(none)',
+    );
+  }
+
+  return offerings.current ?? null;
+}
+
 export async function getOfferings(): Promise<PurchasesOfferings | null> {
   if (!initialized) return null;
   try {
-    return await Purchases.getOfferings();
+    const offerings = await Purchases.getOfferings();
+    const active = getActiveOffering(offerings);
+
+    if (!active) {
+      lastRevenueCatError =
+        `Offering "${REVENUECAT_OFFERING_ID}" not found. Available: ${
+          Object.keys(offerings.all).join(', ') || '(none)'
+        }`;
+      console.warn(`[RevenueCat] ${lastRevenueCatError}`);
+    } else if (active.availablePackages.length === 0) {
+      lastRevenueCatError =
+        `Offering "${REVENUECAT_OFFERING_ID}" has no packages — map weekly/monthly/yearly in RevenueCat.`;
+      console.warn(`[RevenueCat] ${lastRevenueCatError}`);
+    } else {
+      const missingPrices = active.availablePackages.filter(
+        (pkg) => !pkg.product.priceString,
+      ).length;
+      if (missingPrices > 0) {
+        lastRevenueCatError =
+          `${missingPrices} package(s) missing App Store prices — StoreKit could not fetch products (Error 23). ` +
+          'Verify bundle ID, product IDs in App Store Connect, and Paid Apps agreement.';
+      } else {
+        lastRevenueCatError = null;
+      }
+    }
+
+    logRevenueCatDiagnostics(offerings);
+    return offerings;
   } catch (error) {
-    console.warn('[RevenueCat] getOfferings failed', error);
+    const message = parsePurchaseError(error);
+    lastRevenueCatError = message;
+    console.warn('[RevenueCat] getOfferings failed:', message, error);
+    logRevenueCatDiagnostics();
     return null;
   }
 }
@@ -165,17 +325,17 @@ export async function getOfferings(): Promise<PurchasesOfferings | null> {
 export function getSubscriptionPackages(
   offerings: PurchasesOfferings | null,
 ): PurchasesPackage[] {
-  const current = offerings?.current;
-  if (!current) return [];
+  const active = getActiveOffering(offerings);
+  if (!active) return [];
 
   const byId = new Map(
-    current.availablePackages.map((pkg) => [pkg.identifier, pkg]),
+    active.availablePackages.map((pkg) => [pkg.identifier, pkg]),
   );
 
   return [
-    byId.get(PACKAGE_IDS.weekly) ?? current.weekly,
-    byId.get(PACKAGE_IDS.monthly) ?? current.monthly,
-    byId.get(PACKAGE_IDS.yearly) ?? current.annual ?? byId.get(PACKAGE_IDS.yearly),
+    byId.get(PACKAGE_IDS.weekly) ?? active.weekly,
+    byId.get(PACKAGE_IDS.monthly) ?? active.monthly,
+    byId.get(PACKAGE_IDS.yearly) ?? active.annual ?? byId.get(PACKAGE_IDS.yearly),
   ].filter(Boolean) as PurchasesPackage[];
 }
 
@@ -221,12 +381,17 @@ export async function syncEntitlementToProfile(userId: string): Promise<boolean>
 }
 
 export async function presentHitItOffProPaywall(): Promise<PAYWALL_RESULT> {
-  return RevenueCatUI.presentPaywall();
+  const offerings = await getOfferings();
+  const offering = getActiveOffering(offerings);
+  return RevenueCatUI.presentPaywall({ offering: offering ?? undefined });
 }
 
 export async function presentHitItOffProPaywallIfNeeded(): Promise<PAYWALL_RESULT> {
+  const offerings = await getOfferings();
+  const offering = getActiveOffering(offerings);
   return RevenueCatUI.presentPaywallIfNeeded({
     requiredEntitlementIdentifier: HITITOFF_PRO_ENTITLEMENT,
+    offering: offering ?? undefined,
   });
 }
 

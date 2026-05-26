@@ -14,6 +14,10 @@ export const KM_PER_MILE = 1.60934;
 
 export const FREE_DAILY_LIKES = 20;
 export const FREE_MESSAGES_PER_MATCH = 3;
+export const FREE_AI_OPENERS_PER_DAY = 3;
+export const FREE_AI_CONVERSATION_COACH_PER_DAY = 5;
+export const FREE_PROFILE_REVIEWS_PER_DAY = 1;
+export const FREE_DATE_SUGGESTIONS_PER_WEEK = 1;
 export const FREE_LIKED_YOU_PREVIEW = 1;
 export const COMPATIBILITY_THRESHOLD = 70;
 export const QUIZ_WEIGHT = 0.6;
@@ -27,8 +31,11 @@ export const PRIVACY_POLICY_URL = `${WEBSITE_URL}/privacy`;
 export const TERMS_OF_SERVICE_URL = `${WEBSITE_URL}/terms`;
 export const EULA_URL = `${WEBSITE_URL}/eula`;
 
-/** RevenueCat entitlement identifier — must match dashboard exactly */
-export const HITITOFF_PRO_ENTITLEMENT = 'HitItOff Pro';
+/** RevenueCat entitlement identifier — must match dashboard exactly (used by mobile SDK) */
+export const HITITOFF_PRO_ENTITLEMENT = 'Luvi Pro';
+
+/** RevenueCat REST API entitlement id — for server/webhooks only, not the mobile SDK */
+export const REVENUECAT_LUVI_PRO_ENTITLEMENT_REST_ID = 'entlc32c4bb31f';
 
 /** @deprecated Use HITITOFF_PRO_ENTITLEMENT */
 export const FLIKR_PRO_ENTITLEMENT = HITITOFF_PRO_ENTITLEMENT;
@@ -42,6 +49,23 @@ export const PACKAGE_IDS = {
   monthly: 'monthly',
   yearly: 'yearly',
 } as const;
+
+/** iOS bundle ID — must match app.json and RevenueCat iOS app */
+export const IOS_BUNDLE_ID = 'com.luvii.app';
+
+/** App Store / Play Store product IDs */
+export const STORE_PRODUCT_IDS = {
+  weekly: 'com.luvii.app.weekly',
+  monthly: 'com.luvii.app.monthly',
+  yearly: 'com.luvii.app.yearly',
+} as const;
+
+/** RevenueCat offering identifier — must match dashboard exactly */
+export const REVENUECAT_OFFERING_ID =
+  process.env.EXPO_PUBLIC_REVENUECAT_OFFERING_ID?.trim() || 'flikr-pro';
+
+/** @deprecated Use REVENUECAT_OFFERING_ID */
+export const FLIKR_PRO_OFFERING_ID = REVENUECAT_OFFERING_ID;
 
 /** @deprecated Use PACKAGE_IDS */
 export const PRODUCT_IDS = PACKAGE_IDS;
@@ -120,6 +144,15 @@ export const HITITOFF_PRO_FEATURES = [
   'See who liked you',
   'View all profile photos',
   'Compatibility scores on every profile',
+  'Advanced AI compatibility insights',
+  'Unlimited AI conversation starters',
+  'Unlimited AI conversation coach',
+  'Unlimited profile coach reviews',
+  'Practice mode with AI feedback',
+  'Advanced mood filters',
+  'Chemistry analytics & timeline',
+  'AI voice vibe summaries',
+  'Priority visibility in discovery',
   'Send & receive super likes',
   '20-second video intro',
   'Profile boosts',
@@ -133,6 +166,7 @@ export const PRO_DISCOVERY_FILTERS = [
   'Age range',
   'Minimum compatibility score',
   'Shared interest filters',
+  'Mood-based matching',
   '3+ photo minimum',
   'Video intro filter',
   'Instagram filter',

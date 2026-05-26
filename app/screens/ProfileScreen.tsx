@@ -34,6 +34,12 @@ import type { MainTabParamList, RootStackParamList } from '../types';
 import { VideoIntroPlayer } from '../components/VideoIntroPlayer';
 import { ProfileViewBody } from '../components/ProfileViewBody';
 import { InstagramSection } from '../components/InstagramSection';
+import { VoiceRecorder } from '../components/VoiceRecorder';
+import { uploadAndSummarizeVoice } from '../services/voiceService';
+import { submitVerificationRequest } from '../services/safetyService';
+import { ProfileCoachPanel } from '../components/ProfileCoachPanel';
+import { upsertOwnPhone } from '../services/phoneService';
+import { isValidPhoneNumber, normalizePhoneInput } from '../utils/phone';
 
 interface ProfileScreenProps {
   userId: string;
@@ -53,6 +59,7 @@ export function ProfileScreen({ userId, onSignOut }: ProfileScreenProps) {
   const [name, setName] = useState(profile?.name ?? '');
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [interests, setInterests] = useState<string[]>(profile?.interests ?? []);
+  const [phoneNumber, setPhoneNumber] = useState(profile?.phone_number ?? '');
   const [editing, setEditing] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -72,6 +79,7 @@ export function ProfileScreen({ userId, onSignOut }: ProfileScreenProps) {
       setName(profile.name ?? '');
       setBio(profile.bio ?? '');
       setInterests(profile.interests ?? []);
+      setPhoneNumber(profile.phone_number ?? '');
       setEditing(true);
       tabNav.setParams({ edit: undefined });
     }, [route.params?.edit, profile, tabNav]),
@@ -214,8 +222,16 @@ export function ProfileScreen({ userId, onSignOut }: ProfileScreenProps) {
   };
 
   const handleSave = async () => {
+    const trimmedPhone = phoneNumber.trim();
+    if (trimmedPhone && !isValidPhoneNumber(trimmedPhone)) {
+      Alert.alert('Invalid number', 'Please enter a valid phone number or clear the field');
+      return;
+    }
+
     try {
       await updateUserProfile(userId, { name, bio, interests });
+      await upsertOwnPhone(userId, trimmedPhone);
+      await loadProfile(userId);
       setEditing(false);
       Alert.alert('Saved', 'Profile updated successfully');
     } catch (e) {
@@ -227,6 +243,7 @@ export function ProfileScreen({ userId, onSignOut }: ProfileScreenProps) {
     setName(profile?.name ?? '');
     setBio(profile?.bio ?? '');
     setInterests(profile?.interests ?? []);
+    setPhoneNumber(profile?.phone_number ?? '');
     setEditing(true);
   };
 
@@ -378,6 +395,23 @@ export function ProfileScreen({ userId, onSignOut }: ProfileScreenProps) {
                 placeholderTextColor={COLORS.textMuted}
                 multiline
               />
+
+              <Text style={styles.sectionLabel}>Phone number</Text>
+              <Text style={styles.phoneHint}>
+                Private — only shared when you and a match both tap Exchange numbers.
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={phoneNumber}
+                onChangeText={(text) => setPhoneNumber(normalizePhoneInput(text))}
+                placeholder="(555) 123-4567"
+                placeholderTextColor={COLORS.textMuted}
+                keyboardType="phone-pad"
+                textContentType="telephoneNumber"
+                autoComplete="tel"
+                maxLength={20}
+              />
+
               <View style={styles.interests}>
                 {INTEREST_OPTIONS.map((interest) => (
                   <TouchableOpacity
@@ -408,6 +442,56 @@ export function ProfileScreen({ userId, onSignOut }: ProfileScreenProps) {
                   await updateUserProfile(userId, updates);
                 }}
               />
+
+              <View style={styles.voiceSection}>
+                <Text style={styles.sectionLabel}>Voice bio</Text>
+                <VoiceRecorder
+                  maxDurationSec={60}
+                  label="Record a short voice intro"
+                  onRecorded={async (uri) => {
+                    try {
+                      const { vibeSummary } = await uploadAndSummarizeVoice(userId, uri, 'bio');
+                      await loadProfile(userId);
+                      if (vibeSummary) {
+                        Alert.alert('Voice saved', `Vibe: ${vibeSummary}`);
+                      }
+                    } catch (e) {
+                      Alert.alert('Error', e instanceof Error ? e.message : 'Upload failed');
+                    }
+                  }}
+                />
+                {profile.voice_vibe_summary && (
+                  <Text style={styles.vibeSummary}>"{profile.voice_vibe_summary}"</Text>
+                )}
+              </View>
+
+              <TouchableOpacity
+                style={styles.verifyBtn}
+                onPress={async () => {
+                  const result = await ImagePicker.launchCameraAsync({
+                    mediaTypes: ['images'],
+                    quality: 0.8,
+                  });
+                  if (result.canceled || !result.assets[0]) return;
+                  try {
+                    const url = await uploadProfilePhoto(userId, result.assets[0].uri, 99, 'image/jpeg');
+                    await submitVerificationRequest(userId, url);
+                    await loadProfile(userId);
+                    Alert.alert('Submitted', 'Your verification request is pending review.');
+                  } catch (e) {
+                    Alert.alert('Error', e instanceof Error ? e.message : 'Verification failed');
+                  }
+                }}
+              >
+                <Ionicons name="shield-checkmark-outline" size={18} color={COLORS.success} />
+                <Text style={styles.verifyBtnText}>
+                  {profile.verification_status === 'verified'
+                    ? 'Profile verified'
+                    : profile.verification_status === 'pending'
+                      ? 'Verification pending'
+                      : 'Verify profile'}
+                </Text>
+              </TouchableOpacity>
             </>
           ) : (
             <ProfileViewBody
@@ -420,8 +504,42 @@ export function ProfileScreen({ userId, onSignOut }: ProfileScreenProps) {
               instagramUsername={profile.instagram_username}
               instagramPhotos={profile.instagram_photos}
               photosUnlocked
+              voiceBioUrl={profile.voice_bio_url}
+              voiceVibeSummary={profile.voice_vibe_summary}
             />
           )}
+
+          <View style={styles.coachSection}>
+            <ProfileCoachPanel
+              isPremium={premium}
+              onApplyBio={(appliedBio) => {
+                setBio(appliedBio);
+                setEditing(true);
+              }}
+            />
+
+            <TouchableOpacity
+              style={styles.practiceBtn}
+              onPress={() => {
+                if (!premium) {
+                  stackNav.navigate('Paywall');
+                  return;
+                }
+                stackNav.navigate('PracticeMode');
+              }}
+            >
+              <Ionicons name="school-outline" size={20} color={COLORS.primary} />
+              <View style={styles.practiceBtnTextWrap}>
+                <Text style={styles.practiceBtnTitle}>Practice mode</Text>
+                <Text style={styles.practiceBtnSub}>
+                  {premium
+                    ? 'Rehearse conversations with AI feedback'
+                    : 'Pro — build confidence before real matches'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+            </TouchableOpacity>
+          </View>
 
           {!premium && (
             <View style={styles.quizHidden}>
@@ -460,7 +578,7 @@ export function ProfileScreen({ userId, onSignOut }: ProfileScreenProps) {
 
           <Text style={styles.settingsTitle}>Settings</Text>
 
-          <LegalLinksRow />
+          <LegalLinksRow style={styles.legalLinksRow} />
 
           <TouchableOpacity style={styles.deleteAccountBtn} onPress={handleDeleteAccount}>
             <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
@@ -520,6 +638,13 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: 16,
     fontWeight: '700',
+    marginBottom: 10,
+  },
+  phoneHint: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: -6,
     marginBottom: 10,
   },
   videoWrap: {
@@ -624,6 +749,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   quizHiddenText: { color: COLORS.textMuted, fontSize: 13, flex: 1 },
+  coachSection: {
+    marginTop: 20,
+    gap: 12,
+  },
+  practiceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: COLORS.card,
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  practiceBtnTextWrap: { flex: 1 },
+  practiceBtnTitle: { color: COLORS.text, fontSize: 16, fontWeight: '600' },
+  practiceBtnSub: { color: COLORS.textMuted, fontSize: 12, marginTop: 2 },
   premiumBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -662,6 +804,9 @@ const styles = StyleSheet.create({
     marginTop: 28,
     marginBottom: 12,
   },
+  legalLinksRow: {
+    marginBottom: 24,
+  },
   deleteAccountBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -679,5 +824,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   signOutBtn: { alignItems: 'center', marginTop: 16, padding: 12 },
+  voiceSection: {
+    marginTop: 20,
+    gap: 8,
+  },
+  vibeSummary: {
+    color: COLORS.accent,
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
+  verifyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: 'rgba(74, 222, 128, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(74, 222, 128, 0.3)',
+  },
+  verifyBtnText: {
+    color: COLORS.success,
+    fontSize: 14,
+    fontWeight: '600',
+  },
   signOutText: { color: COLORS.danger, fontSize: 15, fontWeight: '600' },
 });

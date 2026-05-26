@@ -2,34 +2,34 @@ import Link from "next/link";
 
 const FEATURES = [
   {
+    title: "AI conversation coach",
+    description:
+      "Get a conversation temperature score, diagnosis of what's stalling, and two reply suggestions with explanations — built into chat, no screenshots.",
+  },
+  {
+    title: "AI profile coach",
+    description:
+      "Review your bio, photo order, and prompts with actionable rewrites. Free users get 1 review per day; Pro gets unlimited.",
+  },
+  {
     title: "Compatibility quiz matching",
     description:
       "Answer questions about personality, lifestyle, values, and humor. HitItOff scores how well you align before you swipe.",
   },
   {
-    title: "Local discovery radius",
+    title: "Red / green flag checks",
     description:
-      "Find compatible singles nearby with distance-aware scoring. Free users search up to 3 mi; Pro unlocks up to 50 mi.",
+      "Long-press any incoming message for an instant coaching read — green light, yellow caution, or red flag with plain-language explanation.",
   },
   {
-    title: "Transparent compatibility scores",
+    title: "Practice mode (Pro)",
     description:
-      "See a compatibility percentage on profiles so you know why someone is a strong match — not just a pretty photo.",
+      "Rehearse conversations with a simulated AI match, then get scored feedback on confidence and question quality before real dates.",
   },
   {
-    title: "Video intro profiles",
+    title: "Match, chat & date in one app",
     description:
-      "Stand out with a 20-second video intro. Pro members can filter for profiles with video and Instagram photos.",
-  },
-  {
-    title: "Smart discovery filters",
-    description:
-      "Filter by age, interests, compatibility minimum, photo count, bio, video intro, and more with HitItOff Pro.",
-  },
-  {
-    title: "Match and chat instantly",
-    description:
-      "When you both like each other, it is a match. Start chatting right away and keep the conversation going.",
+      "Local discovery, mood matching, chemistry timeline, AI date ideas with maps, and safety tools — no switching between apps.",
   },
 ] as const;
 
@@ -38,11 +38,11 @@ export function FeatureGrid() {
     <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
       <div className="max-w-2xl">
         <h2 className="text-3xl font-bold sm:text-4xl">
-          Dating built around compatibility, not guesswork
+          AI-coached compatibility dating
         </h2>
         <p className="mt-4 text-lg text-text-muted">
-          HitItOff combines personality science, location, and modern discovery tools
-          so you spend less time on bad fits and more time on real connections.
+          HitItOff combines Hitch-style AI coaching with real matching — personality
+          science, conversation diagnosis, and local discovery in one native app.
         </p>
       </div>
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

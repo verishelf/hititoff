@@ -10,6 +10,8 @@ import { COLORS } from '../utils/constants';
 import { headerText } from '../utils/typography';
 import type { Candidate } from '../types';
 import { ProfileMediaGallery } from './ProfileMediaGallery';
+import { MoodBadge } from './MoodBadge';
+import { RespectfulDaterBadge } from './RespectfulDaterBadge';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width - 32;
@@ -49,6 +51,10 @@ export function UserCard({
           <Text style={styles.compatibilityLabel}>match</Text>
         </View>
       )}
+      <View style={styles.topLeftBadges}>
+        <MoodBadge mood={user.current_mood} size="medium" />
+        {user.respectful_dater_badge && <RespectfulDaterBadge size="small" />}
+      </View>
       </View>
 
       <View style={styles.info}>
@@ -111,6 +117,13 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
+  },
+  topLeftBadges: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    gap: 6,
+    zIndex: 2,
   },
   info: {
     padding: 16,

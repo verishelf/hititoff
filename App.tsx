@@ -13,7 +13,13 @@ import { RootNavigator } from './app/navigation/RootNavigator';
 import { AuthScreen } from './app/screens/AuthScreen';
 import { OnboardingScreen } from './app/screens/OnboardingScreen';
 import { QuizScreen } from './app/screens/QuizScreen';
-import { createSessionFromAuthUrl, getSession, onAuthStateChange } from './app/services/authService';
+import {
+  clearStaleSession,
+  createSessionFromAuthUrl,
+  getValidSession,
+  isInvalidRefreshTokenError,
+  onAuthStateChange,
+} from './app/services/authService';
 import { initializeRevenueCat, isRevenueCatConfigured, teardownRevenueCatListeners } from './app/services/revenuecat';
 import type { CustomerInfo } from 'react-native-purchases';
 import { getProfile } from './app/services/matchService';
@@ -22,6 +28,7 @@ import { useSubscriptionStore } from './app/store/subscriptionStore';
 import { useUserStore } from './app/store/userStore';
 import { COLORS } from './app/utils/constants';
 import { initializeAds } from './app/services/adsService';
+import { heartbeat } from './app/services/activityService';
 
 const navigationTheme = {
   ...DarkTheme,
@@ -97,6 +104,7 @@ export default function App() {
         setCustomerInfo,
         checkPro,
       );
+      heartbeat(currentSession.user.id).catch(() => {});
     } catch (error) {
       console.warn('[App] Failed to resolve app phase', error);
       setPhase('auth');
@@ -134,12 +142,16 @@ export default function App() {
 
     async function bootstrap() {
       try {
-        const currentSession = await getSession();
+        const currentSession = await getValidSession();
         if (cancelled) return;
         setSession(currentSession);
         await resolvePhase(currentSession);
       } catch (error) {
         console.warn('[App] Bootstrap failed', error);
+        if (isInvalidRefreshTokenError(error)) {
+          await clearStaleSession();
+          if (!cancelled) setSession(null);
+        }
         if (!cancelled) setPhase('auth');
       }
     }
@@ -161,6 +173,10 @@ export default function App() {
         }
       } catch (error) {
         console.warn('[App] Auth state change failed', error);
+        if (isInvalidRefreshTokenError(error)) {
+          await clearStaleSession();
+          setSession(null);
+        }
         setPhase('auth');
       }
     });
@@ -218,7 +234,7 @@ export default function App() {
       return (
         <AuthScreen
           onAuthenticated={async () => {
-            const current = await getSession();
+            const current = await getValidSession();
             setSession(current);
             await resolvePhase(current);
           }}

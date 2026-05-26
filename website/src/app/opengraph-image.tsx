@@ -53,7 +53,7 @@ export default function OpenGraphImage() {
           </div>
         </div>
         <p style={{ fontSize: 28, color: "#b8a0ad", maxWidth: 800, textAlign: "center" }}>
-          Compatibility-first dating with personality quiz matching and local discovery
+          AI compatibility, mood matching, chemistry tracking, and local discovery
         </p>
       </div>
     ),

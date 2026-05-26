@@ -9,17 +9,22 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: "What is HitItOff?",
     answer:
-      "HitItOff is a compatibility-first dating app that helps you meet singles nearby. Instead of endless swiping with no context, HitItOff uses a personality quiz, location, and compatibility scoring to surface people who are a better fit for you.",
+      "HitItOff is an AI-powered, compatibility-first dating app that helps you meet singles nearby. Instead of endless swiping with no context, HitItOff uses a personality quiz, multi-dimensional compatibility scoring, mood-based discovery, AI conversation starters, and chemistry tracking to surface people who are a better fit for you.",
   },
   {
     question: "How does HitItOff matching work?",
     answer:
-      "HitItOff combines your quiz answers with distance to calculate a compatibility score for each profile. You swipe on people in your discovery radius, and when you both like each other, you match and can start chatting.",
+      "HitItOff combines your quiz answers with distance to calculate a compatibility score for each profile. Our AI compatibility engine adds deeper insights — chemistry, emotional resonance, communication fit, and humor alignment. You can set your mood to filter discovery, swipe on people in your radius, and match when you both like each other.",
+  },
+  {
+    question: "What AI features does HitItOff include?",
+    answer:
+      "HitItOff includes AI conversation coach (temperature score, diagnosis, and explained reply suggestions), AI profile coach, red/green flag message checks, AI compatibility breakdowns, contextual conversation starters, mood-based matching, conversation temperature tracking in chat, AI voice vibe summaries, curated local date suggestions, practice mode (Pro), and AI message moderation. Free users get 3 openers, 5 conversation coach scans, and 1 profile review per day; Pro unlocks unlimited coaching.",
   },
   {
     question: "Is HitItOff free to use?",
     answer:
-      "Yes. HitItOff offers a free plan with daily likes, messaging, and local discovery up to 3 miles. HitItOff Pro unlocks unlimited likes and messages, a 50-mile radius, advanced filters, who liked you, video intros, boosts, and an ad-free experience.",
+      "Yes. HitItOff offers a free plan with daily likes, messaging, local discovery up to 3 miles, compatibility scores, mood selection, basic chemistry tracking, and limited AI conversation starters. HitItOff Pro unlocks unlimited likes and messages, a 50-mile radius, advanced AI insights, unlimited openers, mood filters, chemistry analytics, voice vibe summaries, and an ad-free experience.",
   },
   {
     question: "How much does HitItOff Pro cost?",
@@ -29,7 +34,27 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: "What is the compatibility score?",
     answer:
-      "The compatibility score reflects how well your personality quiz answers align with another user, weighted together with how close you are within your selected search radius. Higher scores suggest stronger alignment on lifestyle, values, humor, and relationship preferences.",
+      "The compatibility score reflects how well your personality quiz answers align with another user, weighted together with how close you are within your selected search radius. With HitItOff Pro, you also see an AI-powered breakdown across chemistry, emotional resonance, communication compatibility, and humor alignment.",
+  },
+  {
+    question: "What is mood-based matching?",
+    answer:
+      "You can set your current vibe — like deep talks, flirty, adventurous, serious, chill, or spontaneous — and HitItOff adjusts your discovery feed accordingly. Mood badges appear on profiles, and Pro members can filter discovery to match compatible moods.",
+  },
+  {
+    question: "How does the chemistry system work?",
+    answer:
+      "Once you match and start chatting, HitItOff tracks conversation temperature based on response energy, engagement, conversation depth, and humor alignment. You see a chemistry timeline as your connection develops. Pro members get detailed analytics; free users see a summary temperature meter.",
+  },
+  {
+    question: "Does HitItOff help with no-ghosting?",
+    answer:
+      "Yes. HitItOff includes respectful dater badges, warm quick-response options like \"Still interested\" and \"Busy but want to continue,\" and emotionally intelligent nudges — designed to keep conversations honest without being toxic or guilt-driven.",
+  },
+  {
+    question: "Is HitItOff safe?",
+    answer:
+      "HitItOff includes AI message moderation, scam pattern detection, report and block tools, and selfie verification hooks. You can report users from their profile or chat, and flagged content is reviewed. See our Privacy Policy and Terms for full details.",
   },
   {
     question: "Do I need to be 18 or older to use HitItOff?",
@@ -39,12 +64,12 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: "Does HitItOff use my location?",
     answer:
-      "Yes, with your permission. HitItOff uses your location to show compatible people nearby and calculate distance-based scores. You control your search radius in discovery preferences.",
+      "Yes, with your permission. HitItOff uses your location to show compatible people nearby, calculate distance-based scores, and suggest local date ideas. You control your search radius in discovery preferences.",
   },
   {
-    question: "Can I add a video intro to my profile?",
+    question: "Can I add a video or voice intro to my profile?",
     answer:
-      "Yes. HitItOff supports short video intros so matches can see and hear you before chatting. Video intros are available to Pro members and can also be used as a discovery filter.",
+      "Yes. HitItOff supports short video intros and voice bios so matches can see and hear you before chatting. Pro members can get AI-generated voice vibe summaries like \"Confident and playful\" from their recordings.",
   },
   {
     question: "How do I delete my HitItOff account?",
@@ -57,9 +82,14 @@ export const FAQ_ITEMS: FAQItem[] = [
       `HitItOff is launching soon on iOS and Android. Join the waitlist at ${SITE_URL}/#waitlist to get notified when the app is available in your app store.`,
   },
   {
+    question: "How is HitItOff different from AI dating coaches like Hitch?",
+    answer:
+      "Tools like Hitch Dating are AI coaches that work alongside Hinge, Bumble, and Tinder — they analyze screenshots and suggest replies, but you still match and chat on other apps. HitItOff is the dating app itself: compatibility matching, AI coaching, chemistry tracking, and date planning in one place with full conversation context — no copy-paste required.",
+  },
+  {
     question: "How is HitItOff different from other dating apps?",
     answer:
-      "HitItOff focuses on compatibility before chemistry alone. Personality quiz scoring, transparent compatibility percentages, local discovery, video intros, and advanced filters help you spend time on matches that actually make sense.",
+      "HitItOff focuses on compatibility and chemistry before guesswork alone. Personality quiz scoring, AI-powered insights, mood-based discovery, conversation starters, chemistry tracking, voice bios, date planning, and safety tools help you spend time on matches that actually make sense.",
   },
   {
     question: "How do I contact HitItOff support?",
