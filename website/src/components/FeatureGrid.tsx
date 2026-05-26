@@ -41,8 +41,9 @@ export function FeatureGrid() {
           AI-coached compatibility dating
         </h2>
         <p className="mt-4 text-lg text-text-muted">
-          HitItOff combines Hitch-style AI coaching with real matching — personality
-          science, conversation diagnosis, and local discovery in one native app.
+          HitItOff combines AI coaching with real matching — personality science,
+          compatibility scores, mood-based discovery, and local date planning in one
+          native app. More intentional than prompt-only apps like Hinge.
         </p>
       </div>
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

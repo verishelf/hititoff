@@ -1,5 +1,6 @@
 import { CTASection } from "@/components/CTASection";
 import { CoachComparisonSection } from "@/components/CoachComparisonSection";
+import { HingeComparisonSection } from "@/components/HingeComparisonSection";
 import { FAQAccordion } from "@/components/FAQAccordion";
 import { FeatureGrid } from "@/components/FeatureGrid";
 import { Hero } from "@/components/Hero";
@@ -17,6 +18,8 @@ export default function HomePage() {
       <FeatureGrid />
 
       <CoachComparisonSection />
+
+      <HingeComparisonSection />
 
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div className="max-w-2xl">
@@ -63,6 +66,7 @@ export default function HomePage() {
               'What is HitItOff?',
               'What AI features does HitItOff include?',
               'How is HitItOff different from AI dating coaches like Hitch?',
+              'How is HitItOff different from Hinge?',
               'Is HitItOff free to use?',
               'How does the chemistry system work?',
               'Is HitItOff available on iPhone and Android?',

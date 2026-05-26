@@ -87,6 +87,11 @@ export const FAQ_ITEMS: FAQItem[] = [
       "Tools like Hitch Dating are AI coaches that work alongside Hinge, Bumble, and Tinder — they analyze screenshots and suggest replies, but you still match and chat on other apps. HitItOff is the dating app itself: compatibility matching, AI coaching, chemistry tracking, and date planning in one place with full conversation context — no copy-paste required.",
   },
   {
+    question: "How is HitItOff different from Hinge?",
+    answer:
+      "Hinge focuses on prompts and comments — you like a line, match, and figure out the rest yourself. HitItOff adds a personality quiz and compatibility scores before you swipe, mood-based discovery, in-app AI conversation coach with temperature and reply suggestions, chemistry tracking over time, red/green flag checks, and built-in date invites with local AI date ideas. Hinge is where many people already have matches; HitItOff is built for intentional daters who want fewer dead-end chats and more help turning matches into real dates.",
+  },
+  {
     question: "How is HitItOff different from other dating apps?",
     answer:
       "HitItOff focuses on compatibility and chemistry before guesswork alone. Personality quiz scoring, AI-powered insights, mood-based discovery, conversation starters, chemistry tracking, voice bios, date planning, and safety tools help you spend time on matches that actually make sense.",

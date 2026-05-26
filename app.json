@@ -7,11 +7,6 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "hititoff",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#9d1b6b"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.luvii.app",
@@ -25,9 +20,9 @@
       "package": "com.luvii.app",
       "adaptiveIcon": {
         "backgroundColor": "#9d1b6b",
-        "foregroundImage": "./assets/android-icon-foreground.png",
+        "foregroundImage": "./assets/splash-icon.png",
         "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "monochromeImage": "./assets/splash-icon.png"
       },
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
@@ -45,7 +40,19 @@
           "backgroundColor": "#9d1b6b",
           "image": "./assets/splash-icon.png",
           "imageWidth": 280,
-          "resizeMode": "contain"
+          "resizeMode": "contain",
+          "ios": {
+            "backgroundColor": "#9d1b6b",
+            "image": "./assets/splash-icon.png",
+            "imageWidth": 280,
+            "resizeMode": "contain"
+          },
+          "android": {
+            "backgroundColor": "#9d1b6b",
+            "image": "./assets/splash-icon.png",
+            "imageWidth": 280,
+            "resizeMode": "contain"
+          }
         }
       ],
       [

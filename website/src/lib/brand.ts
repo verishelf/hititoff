@@ -32,7 +32,8 @@ export const DEFAULT_DESCRIPTION =
 export const KEYWORDS = [
   "HitItOff",
   "dating app",
-  "AI dating app",
+  "Hinge alternative",
+  "AI dating coach",
   "compatibility dating app",
   "personality quiz dating",
   "chemistry dating app",

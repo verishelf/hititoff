@@ -21,9 +21,12 @@ eas submit --platform android
 **Subtitle:** Better Matches, Closer
 
 **Description (promotional):**
-HitItOff is the AI-coached compatibility dating app. Take a personality quiz, see transparent compatibility scores, and get built-in conversation coaching — temperature scores, profile reviews, and reply suggestions with explanations. No screenshots, no switching apps.
+HitItOff is the AI-coached compatibility dating app — built for people who want more than prompts and guesswork. Take a personality quiz, see transparent compatibility scores, set your vibe for the day, and get built-in conversation coaching: temperature scores, profile reviews, reply suggestions with explanations, and date planning. No screenshots. No switching apps. No Hinge + Hitch stack.
 
-**Keywords:** dating, compatibility, AI coach, local dating, personality quiz, conversation coach
+**Tagline vs Hinge (optional marketing):**
+Hinge helps you start a conversation. HitItOff helps you choose better matches, read the chat, and get to the date.
+
+**Keywords:** dating, compatibility, AI coach, Hinge alternative, local dating, personality quiz, conversation coach, chemistry dating
 
 **Pro highlights:** Unlimited AI coach, practice mode, 50 mi radius, chemistry analytics, video intro
 
